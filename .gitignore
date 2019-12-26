@@ -89,3 +89,4 @@ typings/
 
 # pyenv files
 fypenv/*
+fingerprintBackend/service_account_private_key.json

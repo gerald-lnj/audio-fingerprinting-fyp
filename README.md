@@ -14,3 +14,8 @@ Python 3.8.0
 
 Django 3.0
 
+## django auth
+
+username: gerald
+email: gerald.lau.95@gmail.com
+password: password
