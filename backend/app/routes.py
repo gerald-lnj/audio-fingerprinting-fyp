@@ -3,12 +3,13 @@ from app import app
 
 # sanity check route
 
-@app.route('/')
-@app.route('/index')
+
+@app.route("/")
+@app.route("/index")
 def index():
     return "Hello, World!"
 
 
-@app.route('/ping', methods=['GET'])
+@app.route("/ping", methods=["GET"])
 def ping_pong():
-    return jsonify('pong!')
+    return jsonify("pong!")
