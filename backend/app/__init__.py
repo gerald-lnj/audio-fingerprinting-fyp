@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 class JSONEncoder(json.JSONEncoder):
     # extend json-encoder class to support ObjectId & datetime data types
     # used to store ‘_id’ & ‘time-stamp’ respectively in MongoDB, convert to strings
@@ -35,7 +34,7 @@ DEBUG = True
 app.config["MONGO_URI"] = os.getenv("MONGO_URI")
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(days=1)
-DEBUG = os.getenv("DEBUG")
+# DEBUG = os.getenv("DEBUG")
 
 
 mongo = PyMongo(app)

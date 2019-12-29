@@ -15,6 +15,7 @@ user_schema = {
 
 
 def validate_user(data):
+    print('test')
     try:
         validate(data, user_schema)
     except ValidationError as e:

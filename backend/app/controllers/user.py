@@ -8,7 +8,7 @@ from flask_jwt_extended import (
     get_jwt_identity,
 )
 from app import app, mongo, flask_bcrypt, jwt
-from app.schemas import validate_user
+from app.schemas.user import validate_user
 
 
 @jwt.unauthorized_loader
@@ -17,12 +17,13 @@ def unauthorized_response(callback):
 
 
 @app.route("/auth", methods=["POST"])
+# auth endpoint
 def auth_user():
-    # auth endpoint
+    # validate according to schemas/user.py
     data = validate_user(request.get_json())
     if data["ok"]:
         data = data["data"]
-        user = mongo.db.users.find_one({"email": data["email"]}, {"_id": 0})
+        user = mongo.db.users.find_one({"email": data["email"]}, {"_id": 0}) # TODO: why is _id 0?
         if user and flask_bcrypt.check_password_hash(
             user["password"], data["password"]
         ):
@@ -52,13 +53,17 @@ def auth_user():
 @app.route("/register", methods=["POST"])
 def register():
     # register user endpoint
+    a = request.get_json()
+    print(a)
     data = validate_user(request.get_json())
     if data["ok"]:
+        print('data ok')
         data = data["data"]
         data["password"] = flask_bcrypt.generate_password_hash(data["password"])
         mongo.db.users.insert_one(data)
         return jsonify({"ok": True, "message": "User created successfully!"}), 200
     else:
+        print('data not ok')
         return (
             jsonify(
                 {
