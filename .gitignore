@@ -91,4 +91,6 @@ typings/
 fypenv/*
 fingerprintBackend/service_account_private_key.json
 
-.DS_Store
+**/.DS_Store
+
+*.pyc
