@@ -5,21 +5,28 @@ from jsonschema.exceptions import SchemaError
 user_schema = {
     "type": "object",
     "properties": {
-        "name": {"type": "string",},
-        "email": {"type": "string", "format": "email"},
-        "password": {"type": "string", "minLength": 5},
+        "name": {
+            "type": "string",
+        },
+        "email": {
+            "type": "string",
+            "format": "email"
+        },
+        "password": {
+            "type": "string",
+            "minLength": 5
+        }
     },
     "required": ["email", "password"],
-    "additionalProperties": False,
+    "additionalProperties": False
 }
 
 
 def validate_user(data):
-    print('test')
     try:
         validate(data, user_schema)
     except ValidationError as e:
-        return {"ok": False, "message": e}
+        return {'ok': False, 'message': e}
     except SchemaError as e:
-        return {"ok": False, "message": e}
-    return {"ok": True, "data": data}
+        return {'ok': False, 'message': e}
+    return {'ok': True, 'data': data}
