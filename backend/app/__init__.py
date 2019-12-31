@@ -8,13 +8,13 @@ from flask_pymongo import PyMongo
 from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
 
+
 from dotenv import load_dotenv
 load_dotenv('.flaskenv')
 
 
 class JSONEncoder(json.JSONEncoder):
     ''' extend json-encoder class'''
-
     def default(self, o):
         if isinstance(o, ObjectId):
             return str(o)
