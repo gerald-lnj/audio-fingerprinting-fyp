@@ -24,13 +24,18 @@ class JSONEncoder(json.JSONEncoder):
             return str(o)
         return json.JSONEncoder.default(self, o)
 
-
 # create the flask object
 app = Flask(__name__)
 
+# config mongo uri
 app.config['MONGO_URI'] = os.getenv('MONGO_URI')
+
+# config JWT stuff
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
+
+#config uploader stuff
+app.config['UPLOADED_VIDEOS_DEST'] = os.getenv('UPLOADED_VIDEOS_DEST')
 
 mongo = PyMongo(app)
 flask_bcrypt = Bcrypt(app)
