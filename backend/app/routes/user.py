@@ -30,7 +30,11 @@ def auth_user():
     except exc.ValidationError as e:
         return jsonify({'ok': False, 'message': 'Bad request parameters'}), 400
     else:
-        user = mongo.db.users.find_one({'email': data['email']}, {"_id": 0})
+        user = mongo.db.users.find_one(
+            {'email': data['email']},
+            {"_id": 0} # this line removes the _id key from the returned obj
+        )
+        print()
         if user and flask_bcrypt.check_password_hash(user['password'], data['password']):
             del user['password']
             access_token = create_access_token(identity=data)
