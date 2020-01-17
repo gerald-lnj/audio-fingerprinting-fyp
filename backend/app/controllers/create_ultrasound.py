@@ -6,10 +6,13 @@ Creates ultrasound based on string seed
 import os
 import hashlib
 import wave
+import base64
 
 def noise_generator(seed):
     """
-    Creates ultrasound based on string seed
+    Creates ultrasound based on string seed.
+    Base64-encodes the seed to use as filename.
+    Returns the filenmae as string.
     """
     cwd = os.getcwd()
     hash_object = hashlib.sha512(seed.encode())
@@ -19,8 +22,8 @@ def noise_generator(seed):
 
     for i in range(1, len(hex_dig)):
         infiles.append('{}/source_audio/{}.wav'.format(cwd, hex_dig[i]))
-
-    outfile = '{}/output_audio/{}.wav'.format(cwd, seed)
+    ultrasound_filename = base64.urlsafe_b64encode(seed.encode('utf-8')).decode('utf-8')
+    outfile = '{}/output_audio/{}.wav'.format(cwd, ultrasound_filename)
 
     data = []
     for infile in infiles:
@@ -33,3 +36,4 @@ def noise_generator(seed):
     for _, frames in data:
         output.writeframes(frames)
     output.close()
+    return ultrasound_filename
