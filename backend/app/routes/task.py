@@ -12,15 +12,16 @@ from flask_uploads import (UploadSet, configure_uploads, UploadNotAllowed)
 from validx import exc
 import base64
 from scipy.io import wavfile
-from ..controllers import audio_analysis, audio_hashing, create_ultrasound
+from ..controllers import audio_analysis, audio_hashing, create_ultrasound, audio_overlay
 import os
+import ffmpeg
 # import ..controllers import as A
 
 
 
 VIDEOS = UploadSet(name='videos', extensions=('mp4'))
 configure_uploads(app, VIDEOS)
-cwd = os.getcwd()
+CWD = os.getcwd()
 
 ''' examples
 @app.route('/task', methods=['GET', 'POST', 'DELETE', 'PATCH'])
@@ -92,11 +93,15 @@ def list_tasks():
 @jwt_required
 def upload_file():
     ''' pseudocode
-    3: add videoid to user's history, with audio hashes
-    3: for each ultrasound:
-        a: mix into original audio
-    4: save new file, return
-    5: delete old file
+    1: data received: video, timestamps with links, userid
+
+    2: save video and record in db
+    3: for each link:
+      3a: use link as seed to generate 10s wav file, add document to ultrasound collection
+      3b: analyse wav file and generate peaks
+      3c: hash each fingerprint and add to database
+    4: generate new video
+    5: cleanup
     '''
     users_collection = mongo.db.users
     videos_collection = mongo.db.videos # holds reference to user
@@ -113,58 +118,70 @@ def upload_file():
     else:
         email = form_data['email']
         filename = request.files['file'].filename.split('.')[0]
-        unique_filename = '{}-{}.'.format(filename, email)
         #2a: save file
         try:
-            VIDEOS.save(video, name=unique_filename)
+            video_filename = VIDEOS.save(video, name='{}-{}.'.format(filename, email))
         except UploadNotAllowed:
             return jsonify({'ok': False, 'message': 'The file was not allowed'}), 400
         else:
             # 2b: and record in db
             video_document = {
-                'name': unique_filename,
+                'name': video_filename,
                 'uploader_email': email,
             }
             video_id = videos_collection.insert_one(video_document).inserted_id
 
             # 3: for each link:
-            link_times = [link_time for link_time in form_data.getlist('time')]
+            time_dicts = [
+                {
+                    'start': int(time_entry.split('::')[0]),
+                    'end': int(time_entry.split('::')[1]),
+                    'link': time_entry.split('::')[2],
+                } for time_entry in form_data.getlist('time')
+            ]
+            time_dicts = sorted(time_dicts, key=lambda k: k['start'])
 
-            for link_time in link_times:
+            # 3ai: generate ultrasound and fingerprints and add to db
+            for i, _p in enumerate(time_dicts):
+                # 3aii: use link as seed to generate 10s wav file, add document to ultrasound collection
+                ultrasound_filename = create_ultrasound.noise_generator(_p['link'])
+                time_dicts[i]['filepath'] = '{}/output_audio/{}.wav'.format(CWD, ultrasound_filename)
 
-                start = link_time.split('::')[0]
-                end = link_time.split('::')[1]
-                link = link_time.split('::')[2]
-
-                # 3a: use link as seed to generate 10s wav file, add document to ultrasound collection
-                ultrasound_filename = create_ultrasound.noise_generator(link)
                 ultrasound_document = {
                     'type': 'link',
-                    'content': link,
-                    'start': start,
-                    'end': end,
+                    'content': _p['link'],
+                    'start': _p['start'],
+                    'end': _p['end'],
                     'video_id': ObjectId(video_id)
                 }
                 ultrasound_id = ultrasound_collection.insert_one(ultrasound_document).inserted_id
 
-                # 3b: analyse wav file and generate peaks
-                _, data = wavfile.read('{}/output_audio/{}.wav'.format(cwd, ultrasound_filename))
+                # 3aiii: analyse wav file and generate peaks
+                _, data = wavfile.read('{}/output_audio/{}.wav'.format(CWD, ultrasound_filename))
                 peaks = audio_analysis.analyse(data)
 
-                # 3c: hash each fingerprint and add to database
+                # 3aiv: hash each fingerprint and add to database
                 fingerprints = audio_hashing.hasher(peaks, ultrasound_id)
+
                 for fingerprint in fingerprints:
                     address = fingerprint['address']
                     couple = fingerprint['couple']
+
                     if fingerprints_collection.find_one({'address': address}) is None:
                         # if fingerprint address is not in collection, insert new document
                         fingerprints_collection.insert_one({'address': address, 'couple': [couple]})
+
                     else:
                         # if fingerprint address already exists, append couple
                         fingerprints_collection.update_one({'address': address}, {'$push': {'couple': couple}})
 
-                # 4: cleanup
-                os.remove('{}/output_audio/{}.wav'.format(cwd, ultrasound_filename))
-                
-            os.remove('{}/uploadedFiles/{}mp4'.format(cwd, unique_filename))
+            # 4: generate new video
+            video_filepath = '{}/uploaded_files/{}'.format(CWD, video_filename)
+            audio_overlay.main(video_filepath, time_dicts)
+
+            # 5: cleanup
+            for i, _ in enumerate(time_dicts):
+                os.remove(time_dicts[i]['filepath'])
+            os.remove('{}/uploaded_files/{}'.format(CWD, video_filename))
+
             return jsonify({'ok': True, 'message': 'File successfully uploaded!'}), 200
