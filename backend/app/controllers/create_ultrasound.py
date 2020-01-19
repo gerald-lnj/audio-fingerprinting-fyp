@@ -18,8 +18,11 @@ def noise_generator(seed):
     hash_object = hashlib.sha512(seed.encode())
     hex_dig = hash_object.hexdigest()
 
-    infiles = []
 
+    infiles = []
+    # TODO: 
+    # Currently, produces files that are 2.5s long
+    # need to change to create files that are 10s long
     for i in range(1, len(hex_dig)):
         infiles.append('{}/source_audio/{}.wav'.format(cwd, hex_dig[i]))
     ultrasound_filename = base64.urlsafe_b64encode(seed.encode('utf-8')).decode('utf-8')
