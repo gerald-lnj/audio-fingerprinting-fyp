@@ -2,7 +2,7 @@
 routes for tasks
 '''
 
-from flask import request, jsonify
+from flask import request, jsonify, send_from_directory, after_this_request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from bson.objectid import ObjectId
 from app import app, mongo
@@ -185,3 +185,20 @@ def upload_file():
             os.remove('{}/uploaded_files/{}'.format(CWD, video_filename))
 
             return jsonify({'ok': True, 'message': 'File successfully uploaded!'}), 200
+
+@app.route('/get-video/<string:video_name>', methods=['GET'])
+@jwt_required
+def download(video_name):
+    user = get_jwt_identity()
+    if user['email'] in video_name:
+        try:
+            # # delete file after download
+            # @after_this_request
+            # def remove_file(response):
+            #     os.remove('{}/output_video/{}'.format(CWD, video_name))
+            #     return response
+            return send_from_directory('{}/output_video'.format(CWD), filename=video_name, as_attachment=True)
+        except FileNotFoundError:
+            return jsonify({'ok': False, 'message': 'The file was not found'}), 404
+    else:
+        return jsonify({'ok': False, 'message': 'You are not authorised to download this file'}), 404   
