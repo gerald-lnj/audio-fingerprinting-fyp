@@ -23,6 +23,11 @@ VIDEOS = UploadSet(name="videos", extensions=("mp4"))
 configure_uploads(app, VIDEOS)
 CWD = os.getcwd()
 
+users_collection = mongo.db.users
+videos_collection = mongo.db.videos  # holds reference to user
+ultrasound_collection = mongo.db.ultrasound  # holds reference to video
+fingerprints_collection = mongo.db.fingerprints # holds reference to ultrasound (in couples)
+
 
 @app.route("/upload", methods=["POST"])
 @jwt_required
@@ -38,12 +43,6 @@ def upload_file():
     4: generate new video
     5: cleanup
     """
-    users_collection = mongo.db.users
-    videos_collection = mongo.db.videos  # holds reference to user
-    ultrasound_collection = mongo.db.ultrasound  # holds reference to video
-    fingerprints_collection = (
-        mongo.db.fingerprints
-    )  # holds reference to ultrasound (in couples)
 
     # 1: data received: file, timestamps with links, userid
     video = request.files.get("file")
