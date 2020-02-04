@@ -3,7 +3,7 @@ import math
 import numpy as np
 
 CHUNK_SIZE = 4096
-# Range : {320, 2560, 5120, 20000, 22050}
+# RANGE = [320, 2560, 5120, 20000, 22050]
 RANGE = [30, 238, 476, 1858, 2048]
 FILTER_WINDOW_SIZE = 20
 
@@ -12,6 +12,13 @@ def analyse(audio):
     """
     returns 2d int array of peaks
     """
+    # if wav file is 2 channels
+    if len(audio.shape) == 2:
+        # take one channel only
+        # left_channel = audio[:, 0]
+        # right_channel = audio[:, 1]
+        audio = audio[:, 0]
+
     # returns 2d array of complex numbers
     spectrum = fft(audio)
     # returns 2d array of peaks
