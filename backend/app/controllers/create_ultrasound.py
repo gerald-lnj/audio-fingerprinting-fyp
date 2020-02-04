@@ -38,4 +38,7 @@ def noise_generator(seed):
     for _, frames in data:
         output.writeframes(frames)
     output.close()
+
+    print('DEBUG: Generating noise for seed: {}'.format(seed))
+    print('DEBUG: filename: {}\n'.format(ultrasound_filename))
     return ultrasound_filename

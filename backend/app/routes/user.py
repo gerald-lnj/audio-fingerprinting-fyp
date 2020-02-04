@@ -37,7 +37,6 @@ def auth_user():
             {"email": data["email"]},
             {"_id": 0},  # this line removes the _id key from the returned obj
         )
-        print()
         if user and flask_bcrypt.check_password_hash(
             user["password"], data["password"]
         ):
@@ -59,7 +58,6 @@ def register():
     """ register user endpoint """
     try:
         data = request.get_json(force=True)
-        print(data)
         user_schema(request.get_json(force=True))
     except exc.ValidationError as e:
         errorMsg = []
@@ -98,7 +96,6 @@ def user():
     if request.method == "GET":
         query = request.args
         data = mongo.db.users.find_one(query, {"_id": 0})
-        print(data)
         return jsonify({"ok": True, "data": data}), 200
 
     data = request.get_json()
