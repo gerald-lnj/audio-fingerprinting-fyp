@@ -15,6 +15,7 @@ from app.schemas import upload_schema
 from ..controllers import (
     audio_analysis,
     audio_hashing,
+    audio_matching,
     create_ultrasound,
     audio_overlay,
 )
@@ -171,3 +172,27 @@ def download(video_name):
             ),
             404,
         )
+
+@app.route("/match", methods=["POST"])
+def match():
+    '''function that calls the matching func'''
+    # match_audio = request.files.get("file")
+    # form_data = request.form
+    # TODO: wav file validation
+
+
+    # debug stuff
+
+    # read wavfile
+    _, data = wavfile.read("/Users/gerald/output.wav")
+    # _, data = wavfile.read("/Users/gerald/Documents/FYP/backend/output_audio/aHR0cHM6Ly9zZy55YWhvby5jb20vP3A9dXM=.wav")
+
+        
+    # get peaks
+    peaks = audio_analysis.analyse(data)
+    # generate fingerprints
+    fingerprints = audio_hashing.hasher(peaks)
+
+    # match on fingerprints
+    audio_matching.match(fingerprints)
+    return('ok')
