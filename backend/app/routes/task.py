@@ -130,6 +130,7 @@ def upload_file():
 
             else:
                 # if fingerprint address already exists, append couple
+                # TODO: is there a way to check if couple list already includes couple?
                 FINGERPRINTS_COLLECTION.update_one(
                     {"address": address}, {"$push": {"couple": couple}}
                 )
@@ -205,4 +206,17 @@ def match():
         return jsonify(
                 {"ok": True, "message": "Matched to {} from {}".format(ultrasound_id['content'], video_id['name'])}
             ), 200
+
+
+@app.route("/debug", methods=["POST"])
+def debug():
+    ''' endpoint for me to test quick stuff'''
+    return('ok')
+
+@app.route('/purge')
+def purge():
+    '''purge all documents in all collections except users'''
+    VIDEOS_COLLECTION.remove({})
+    ULTRASOUND_COLLECTION.remove({})
+    FINGERPRINTS_COLLECTION.remove({})
     return('ok')
