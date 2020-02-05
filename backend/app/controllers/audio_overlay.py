@@ -53,7 +53,6 @@ def main(video_filepath, time_dicts):
         print('Audio Overlaying Failed')
 
     else:
-    original_video = VideoFileClip(video_filepath)
         return output_filepath
 
 

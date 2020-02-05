@@ -70,8 +70,6 @@ def upload_file():
     except UploadNotAllowed:
         return jsonify({"ok": False, "message": "The file was not allowed"}), 400
 
-    print('DEBUG: video filename: {}'.format(video_filename))
-
     # 2b: and record in db
     video_document = {
         "name": video_filename,
