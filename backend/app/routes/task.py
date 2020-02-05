@@ -182,15 +182,27 @@ def match():
     # debug stuff
 
     # read wavfile
-    _, data = wavfile.read("/Users/gerald/output.wav")
-    # _, data = wavfile.read("/Users/gerald/Documents/FYP/backend/output_audio/aHR0cHM6Ly9zZy55YWhvby5jb20vP3A9dXM=.wav")
-
-        
+    _, data = wavfile.read("/Users/gerald/Documents/FYP/Bitcoin-20200205142533.wav")
+ 
     # get peaks
     peaks = audio_analysis.analyse(data)
     # generate fingerprints
     fingerprints = audio_hashing.hasher(peaks)
 
     # match on fingerprints
-    audio_matching.match(fingerprints)
+    object_id, match_max = audio_matching.match(fingerprints)
+
+    if object_id is None:
+        return (
+            jsonify(
+                {"ok": False, "message": "No matches found"}
+            ),
+            404,
+        )
+    else:
+        ultrasound_id = ULTRASOUND_COLLECTION.find_one({'_id': object_id})
+        video_id = VIDEOS_COLLECTION.find_one({'_id': ultrasound_id['video_id']})
+        return jsonify(
+                {"ok": True, "message": "Matched to {} from {}".format(ultrasound_id['content'], video_id['name'])}
+            ), 200
     return('ok')
