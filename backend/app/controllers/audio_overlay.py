@@ -75,7 +75,7 @@ def overlay(time_dicts, video_filepath):
 
     output_filepath = video_filepath.replace('uploaded_files', 'output_video')
 
-    ffmpeg_builder = ['ffmpeg']
+    ffmpeg_builder = ['ffmpeg', '-hide_banner', '-loglevel', 'panic']
 
     # add input video args
     ffmpeg_builder.extend(['-i', video_filepath])
@@ -87,19 +87,20 @@ def overlay(time_dicts, video_filepath):
         filepath = time_dict["filepath"]
         time_cursor = start
         while time_cursor < end:
-            # TODO: link audio is currently 2.5s long. aiming to change to 10s.
-            # temp workaround: loop audio 3 times (7.5s)
-            print('DEBUG cursor (s): {}'.format(time_cursor))
-            ffmpeg_builder.extend(['-itsoffset', str(time_cursor), '-i', filepath])
-            ffmpeg_builder.extend(['-itsoffset', str(time_cursor + 3), '-i', filepath])
-            ffmpeg_builder.extend(['-itsoffset', str(time_cursor + 6), '-i', filepath])
+            for i in range(3):
+                # TODO: link audio is currently 2.5s long. aiming to change to 10s.
+                # temp workaround: loop audio 3 times (7.5s)
+                time_cursor_temp = time_cursor + i*3
+                ffmpeg_builder.extend(['-itsoffset', str(time_cursor_temp), '-i', filepath])
+                # ffmpeg_builder.extend(['-itsoffset', str(time_cursor + 3), '-i', filepath])
+                # ffmpeg_builder.extend(['-itsoffset', str(time_cursor + 6), '-i', filepath])
 
             time_cursor += 10
 
     # add filter args
     ffmpeg_builder.extend([
         '-filter_complex',
-        'amix=inputs={}:duration=longest'.format(str(len(time_dicts) + 1))
+        'amix=inputs={}:duration=longest'.format(str(len(time_dicts)*3 + 1))
     ])
 
     # add output args
