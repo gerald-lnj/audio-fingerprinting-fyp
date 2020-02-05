@@ -204,14 +204,17 @@ def match():
         ultrasound_id = ULTRASOUND_COLLECTION.find_one({'_id': object_id})
         video_id = VIDEOS_COLLECTION.find_one({'_id': ultrasound_id['video_id']})
         return jsonify(
-                {"ok": True, "message": "Matched to {} from {}".format(ultrasound_id['content'], video_id['name'])}
+            {
+                "ok": True,
+                "message": "Matched to {}".format(ultrasound_id['content'])
+            }
             ), 200
 
 
 @app.route("/debug", methods=["POST"])
 def debug():
     ''' endpoint for me to test quick stuff'''
-    return('ok')
+    return 'ok'
 
 @app.route('/purge')
 def purge():
