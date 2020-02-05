@@ -2,10 +2,17 @@ import cmath
 import math
 import numpy as np
 
-CHUNK_SIZE = 4096
-# RANGE = [320, 2560, 5120, 20000, 22050]
-RANGE = [30, 238, 476, 1858, 2048]
-FILTER_WINDOW_SIZE = 20
+CHUNK_SIZE = 1024
+
+# # Range : {~300 (unused), 300-440, 440-880, 880-1760, 1760-3400, 3400~}
+# # for audible frequency range
+# RANGE = [7, 10, 20, 40, 80, 512]
+
+# Range : {20k, 20.1k, 20.2k, 20.3k})
+# for ultrasound frequency range
+RANGE = [463, 465, 467, 469, 512]
+
+FILTER_WINDOW_SIZE = 40
 
 
 def analyse(audio):
