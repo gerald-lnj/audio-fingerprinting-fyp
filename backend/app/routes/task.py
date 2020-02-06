@@ -222,4 +222,4 @@ def purge():
     VIDEOS_COLLECTION.remove({})
     ULTRASOUND_COLLECTION.remove({})
     FINGERPRINTS_COLLECTION.remove({})
-    return('ok')
+    return 'ok'
