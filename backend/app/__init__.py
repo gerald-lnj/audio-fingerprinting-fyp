@@ -7,8 +7,7 @@ from flask import Flask
 from flask_pymongo import PyMongo
 from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
-
-
+from flask_cors import CORS
 from dotenv import load_dotenv
 
 load_dotenv(".flaskenv")
@@ -29,6 +28,9 @@ class JSONEncoder(json.JSONEncoder):
 
 # create the flask object
 app = Flask(__name__)
+
+# CORS stuff
+CORS(app)
 
 # config mongo uri
 app.config["MONGO_URI"] = os.getenv("MONGO_URI")
