@@ -1,97 +1,91 @@
 <template>
-  <v-app id="inspire">
-    <v-navigation-drawer
-      v-model="drawer"
-      app
-    >
-      <v-list dense>
-        <v-list-item link>
-          <v-list-item-action>
-            <v-icon>mdi-microphone</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>Listen</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+  <v-container>
+    <v-row>
+      <v-col align="center">
+        <v-col>
+          <v-btn
+            to="detect"
+          > 
+            DETECT 
+          </v-btn>
+        </v-col>
 
-        <v-list-item link>
-          <v-list-item-action>
-            <v-icon>mdi-upload</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>Upload</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+        <v-col>
+          <v-btn
+            @click="uploadLoginChecker"
+          >
+            UPLOAD
+          </v-btn>
+          <v-snackbar
+            v-model="snackbar"
+            :timeout="3000"
+          >
+            Login Required!
+          </v-snackbar>
+        </v-col>
 
-      </v-list>
-    </v-navigation-drawer>
-
-    <v-app-bar app color="#003459" dark>
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-toolbar-title>Fingerprinting</v-toolbar-title>
-      <v-layout align-end justify-end>
-        <v-btn colour='indigo' to="/ping">Login</v-btn>
-      </v-layout>
-
-    </v-app-bar>
-
-    <v-content>
-      <v-container
-        class="fill-height"
-        fluid
-      >
-        <v-row
-          align="center"
-          justify="center"
-        >
-          <v-col class="text-center">
-            <v-tooltip left>
-              <template v-slot:activator="{ on }">
-                <v-btn
-                  :href="source"
-                  icon
-                  large
-                  target="_blank"
-                  v-on="on"
-                >
-                  <v-icon large>mdi-code-tags</v-icon>
-                </v-btn>
-              </template>
-              <span>Source</span>
-            </v-tooltip>
-
-            <v-tooltip right>
-              <template v-slot:activator="{ on }">
-                <v-btn
-                  icon
-                  large
-                  href="https://codepen.io/johnjleider/pen/zgxeLQ"
-                  target="_blank"
-                  v-on="on"
-                >
-                  <v-icon large>mdi-codepen</v-icon>
-                </v-btn>
-              </template>
-              <span>Codepen</span>
-            </v-tooltip>
-          </v-col>
-        </v-row>
-      </v-container>
-    </v-content>
-    <v-footer color="#003459" app>
-      <span class="white--text">&copy; 2019</span>
-    </v-footer>
-  </v-app>
+        <v-col>
+          <v-btn
+            @click="debug"
+          > 
+            RESET STATE 
+          </v-btn>
+        </v-col>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
 export default {
+  name: 'Home',
   props: {
-    source: String,
   },
   data: () => ({
-    drawer: false,
-
+    snackbar: false
   }),
+  methods: {
+    uploadLoginChecker() {
+      this.$store.state.loggedIn ? this.$router.push('upload') : this.snackbar = true;
+    },
+    debug() {
+      this.$store.commit('resetState')
+    }
+  }
 };
 </script>
+
+<style scoped>
+.title {
+  font-family: "Autumn", "Avenir", Helvetica, Arial, sans-serif;
+  letter-spacing: 5px;
+  font-size: 44px;
+  color: white;
+}
+.login {
+  margin-top: 40px;
+}
+.input {
+  width: 75%;
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+button {
+  cursor: pointer;
+}
+p a {
+  text-decoration: underline;
+  color: #fffb11;
+  cursor: pointer;
+}
+.alert-style {
+  min-width: 200px;
+}
+/* Inserting this collapsed row between two flex items will make
+* the flex item that comes after it break to a new row */
+.break {
+  flex-basis: 100%;
+  height: 0;
+}
+
+</style>
