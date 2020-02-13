@@ -51,7 +51,7 @@
           </v-form>
           <v-snackbar
             v-model="snackbar.flag"
-            :timeout="0"
+            :timeout="5000"
           >
             {{ snackbar.snackbarMsg }}
           </v-snackbar>
@@ -181,7 +181,7 @@ export default {
       return tempLinkFlag
     },
     submit: function() {
-      return (!this.snackbar.flag && this.tempNumFlag && this.tempLinkFlag && this.videoDuration)
+      return (!this.snackbar.flag && this.tempNumFlag && this.tempLinkFlag && this.videoDuration && this.linkFormData.length>0)
     }
   },
   methods: {
