@@ -7,6 +7,7 @@
       <v-col align="center">
         <v-col>
           <v-file-input
+            v-model="files"
             accept="video/mp4"
             placeholder="mp4 only!"
             label="Select video"
@@ -69,6 +70,7 @@
           <v-btn
             bottom
             :disabled="!submit"
+            @click="submitRequest"
           >
             Submit
           </v-btn>
@@ -79,11 +81,13 @@
 </template>
 
 <script>
+import Axios from 'axios';
 export default {
 
   name: "Upload",
   data: () => ({
     videoDuration: null,
+    files: null,
     valid: false,
     linkFormData: [
       {
@@ -204,6 +208,43 @@ export default {
     },
     deleteLink(index) {
       this.linkFormData.splice(index, 1)
+    },
+    submitRequest() {
+      const server_url = process.env.VUE_APP_SERVER_URL
+      const bodyFormData = new FormData();
+      const email = this.$store.state.email
+      const jwt = this.$store.state.jwt
+      const config = {
+        headers: {Authorization: `Bearer ${jwt}`}
+      }
+
+      this.linkFormData.forEach((entry) => {
+        bodyFormData.append('time', `${entry.start}::${entry.end}::${entry.link}`)
+      })
+
+      bodyFormData.append('file', this.files)
+
+      bodyFormData.set('email', email)
+
+      Axios
+      .post(`${server_url}/upload`, bodyFormData, config)
+      .then((resp) => {
+        this.linkFormData = [
+          {
+            start: null,
+            end: null, 
+            link: null,
+          }
+        ]
+        this.snackbar.snackbarMsg = resp.data.message
+        this.files = null
+        this.snackbar.flag = true
+      })
+      .catch((error) => {
+        console.log(error)
+        this.snackbar.snackbarMsg = 'Sorry, there was a problem!'
+        this.snackbar.flag = true
+      })
     }
   },
 };
