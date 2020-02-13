@@ -49,10 +49,10 @@
             </v-container>
           </v-form>
           <v-snackbar
-            v-model="snackbar"
+            v-model="snackbar.flag"
             :timeout="0"
           >
-            {{ snackbarMsg }}
+            {{ snackbar.snackbarMsg }}
           </v-snackbar>
         </v-col>
         <v-col>
@@ -106,57 +106,79 @@ export default {
         } else return "Not a valid URL!"
       }
     },
-    snackbar: false,
-    snackbarMsg: null,
-    submit: false,
   }),
-  updated() {
-    // on link form update, check that time is in order
-    let error = false
-    let errorMessages = []
-    let tempNumFlag = true
-    let tempLinkFlag = true
-    for (let i = 0; i < this.linkFormData.length; i++) {
-      let currentLink = this.linkFormData[i]
-      if (currentLink.start && currentLink.end && this.videoDuration){ 
-        // check start < end
-        if (currentLink.start >= currentLink.end) {
-          errorMessages.push('Make sure your start and end times are in order!')
-          error = true
-        }
+  computed: {
+    snackbar: function() {
+      const snackbar = {
+        flag: false,
+        snackbarMsg: null
+      }
 
-        // check links in sequence
-        if (i != 0) {
-          let prevLink = this.linkFormData[i-1]
-          if (currentLink.start < prevLink.end) {
-            errorMessages.push('Make sure your links are sequential!')
+      let error = false
+      let errorMessages = []
+      for (let i = 0; i < this.linkFormData.length; i++) {
+        let currentLink = this.linkFormData[i]
+
+        // set error flag
+        if (currentLink.start && currentLink.end && this.videoDuration){ 
+
+          // check start < end
+          if (currentLink.start >= currentLink.end) {
+            errorMessages.push('Make sure your start and end times are in order!')
             error = true
           }
-        }
 
-        // check vid duration
-        if (i+1 == this.linkFormData.length) {
-          if (currentLink.end > this.videoDuration) {
-            errorMessages.push("Make sure you don't exceed the video duration!")
-            error = true
+          // check links in sequence
+          if (i != 0) {
+            let prevLink = this.linkFormData[i-1]
+            if (currentLink.start < prevLink.end) {
+              errorMessages.push('Make sure your links are sequential!')
+              error = true
+            }
+          }
+
+          // check vid duration
+          if (i+1 == this.linkFormData.length) {
+            if (currentLink.end > this.videoDuration) {
+              errorMessages.push("Make sure you don't exceed the video duration!")
+              error = true
+            }
           }
         }
       }
-      // set flag if start/end fail rule validation
-      if ((this.rules.numRules(currentLink.start) && this.rules.numRules(currentLink.end)) != true) tempNumFlag = false
 
-      // set flag if link fails validation
-      if ((this.rules.linkRules(currentLink.link)) != true) tempLinkFlag = false
+      if (error) {
+        snackbar.flag = error
+        snackbar.snackbarMsg = errorMessages.join('\n')
+      }
+
+      return snackbar
+    },
+    tempNumFlag: function() {
+      let tempNumFlag = true
+      for (let i = 0; i < this.linkFormData.length; i++) {
+        let currentLink = this.linkFormData[i]
+        // set tempNumFlag if start/end fail rule validation
+        if (
+          (this.rules.numRules(currentLink.start)!= true) || 
+          (this.rules.numRules(currentLink.end) != true)
+        ) tempNumFlag = false
+      }
+      return tempNumFlag
+    },
+    tempLinkFlag: function() {
+      let tempLinkFlag = true
+      for (let i = 0; i < this.linkFormData.length; i++) {
+        let currentLink = this.linkFormData[i]
+
+        // set tempLinkFlag if link fails validation
+        if ((this.rules.linkRules(currentLink.link)) != true) tempLinkFlag = false
+      }
+      return tempLinkFlag
+    },
+    submit: function() {
+      return (!this.snackbar.flag && this.tempNumFlag && this.tempLinkFlag && this.videoDuration)
     }
-    if (error) {
-      this.snackbarMsg = errorMessages.join('\n')
-      this.snackbar = true
-    } else this.snackbar = false
-
-    if (!error && tempNumFlag && tempLinkFlag && this.videoDuration) {
-      this.submit = true
-    }
-
   },
   methods: {
     getVideoDuration(file) {
