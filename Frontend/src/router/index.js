@@ -6,6 +6,7 @@ import Login from '../views/Login.vue';
 import Account from '../views/Account.vue'
 import store from '../store/index'
 import Upload from '../views/Upload.vue'
+import Detect from '../views/Detect.vue'
 
 Vue.use(VueRouter);
 
@@ -51,6 +52,11 @@ const routes = [
     meta: {
       requiresAuth: true,
     }
+  },
+  {
+    path: '/detect',
+    name: 'Detect',
+    component: Detect,
   },
 ];
 
