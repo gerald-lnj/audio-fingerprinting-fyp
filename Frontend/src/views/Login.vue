@@ -64,7 +64,6 @@ export default {
     email: "",
     password: "",
     showPassword: false,
-    server_url: process.env.VUE_APP_SERVER_URL,
     rules: {
       required (value) {
         return !!value||'Required'
@@ -86,7 +85,8 @@ export default {
         "email": 'test@test.com',
         "password": '12345'
       }
-      Axios.post(`${this.server_url}/auth`, data)
+      const server_url = process.env.VUE_APP_SERVER_URL
+      Axios.post(`${server_url}/auth`, data)
       .then((resp)=> {
         this.$store.commit('updateDetails', resp)
         this.$store.commit('updateLoginStatus')
