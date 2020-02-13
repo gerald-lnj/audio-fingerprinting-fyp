@@ -143,10 +143,10 @@ export default {
         }
       }
       // set flag if start/end fail rule validation
-      if (!(this.rules.numRules(currentLink.start) && this.rules.numRules(currentLink.end))) tempNumFlag = false
+      if ((this.rules.numRules(currentLink.start) && this.rules.numRules(currentLink.end)) != true) tempNumFlag = false
 
       // set flag if link fails validation
-      if (!(this.rules.linkRules(currentLink.link))) tempLinkFlag = false
+      if ((this.rules.linkRules(currentLink.link)) != true) tempLinkFlag = false
     }
     if (error) {
       this.snackbarMsg = errorMessages.join('\n')
