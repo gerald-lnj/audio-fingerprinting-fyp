@@ -72,7 +72,10 @@
 
     <v-content>
       <!-- Provides the application the proper gutter -->
-      <v-container fluid fill-height>
+      <v-container 
+        fluid
+        fill-height
+      >
         <!-- for vue-router -->
         <router-view />
       </v-container>
