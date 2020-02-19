@@ -175,17 +175,24 @@ def download(video_name):
         )
 
 
-@app.route("/match", methods=["POST"])
-def match():
+@app.route("/detect", methods=["POST"])
+def detect():
     """function that calls the matching func"""
     # match_audio = request.files.get("file")
     # form_data = request.form
     # TODO: wav file validation
 
-    # debug stuff
+    # read file from req
+    if 'audio' not in request.files.keys():
+        return (
+            jsonify(
+                {"ok": False, "message": "Expected WAV file missing"}
+            ),
+            415,
+        )
 
-    # read wavfile
-    _, data = wavfile.read("/Users/gerald/Documents/FYP/Bitcoin-20200205142533.wav")
+    audio_file = request.files.get('audio')
+    _, data = wavfile.read(audio_file)
 
     # get peaks
     peaks = audio_analysis.analyse(data)
@@ -197,8 +204,8 @@ def match():
 
     if object_id is None:
         return (
-            jsonify({"ok": False, "message": "No matches found"}),
-            404,
+            jsonify({"ok": True, "message": "No matches found"}),
+            200,
         )
     else:
         ultrasound_id = ULTRASOUND_COLLECTION.find_one({"_id": object_id})
