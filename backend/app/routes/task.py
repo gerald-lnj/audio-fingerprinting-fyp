@@ -205,7 +205,7 @@ def detect():
     if object_id is None:
         return (
             jsonify({"ok": True, "message": "No matches found"}),
-            200,
+            204,
         )
     else:
         ultrasound_id = ULTRASOUND_COLLECTION.find_one({"_id": object_id})
@@ -227,10 +227,10 @@ def debug():
     return "ok"
 
 
-@app.route("/purge")
+@app.route("/purge", methods=[""])
 def purge():
     """purge all documents in all collections except users"""
     VIDEOS_COLLECTION.remove({})
     ULTRASOUND_COLLECTION.remove({})
     FINGERPRINTS_COLLECTION.remove({})
-    return "ok"
+    return "purged records"
