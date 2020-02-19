@@ -4,9 +4,9 @@
       <v-col align="center">
         <v-col>
           <audio
+            v-if="debug"
             ref="audio"
             controls
-            autoplay
             playsinline
           />
         </v-col>
@@ -39,13 +39,15 @@
 
 
 <script>
-const RecordRTC = require('recordrtc');
+import RecordRTC from 'recordrtc'
+import Axios from 'axios';
 export default {
   name: 'Detect',
   data: function () {
     return {
       recording: false,
-      recordingIcon: "mdi-microphone"
+      recordingIcon: "mdi-microphone",
+      debug: true
     }
   },
   methods: {
@@ -55,8 +57,12 @@ export default {
         mimeType: 'audio/wav',
         recorderType: RecordRTC.StereoAudioRecorder,
         numberOfAudioChannels: 1,
-        desiredSampRate: 44100
-      };
+        desiredSampRate: 44100,
+        timeSlice: 5000,
+        ondataavailable: (blob) => {
+          this.postBlob(blob)
+        }
+       };
       const isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveOrOpenBlob || !!navigator.msSaveBlob);
       const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
       console.log(`isEdge: ${isEdge}`)
@@ -67,6 +73,19 @@ export default {
       }
 
       return options
+    },
+    postBlob(blob) {
+      const server_url = process.env.VUE_APP_SERVER_URL
+      const bodyFormData = new FormData();
+      bodyFormData.append('audio', blob)
+      Axios
+      .post(`${server_url}/detect`, bodyFormData)
+      .then((msg)=>{
+        console.log(msg)
+      })
+      .catch((error) => {
+        console.error(error)
+      })
     },
     toggleRecording() {
       if (this.recording) {
@@ -106,6 +125,7 @@ export default {
     },
     download() {
       this.recordRTC.save('audio.wav');
+      this.recordRTC.ge
     }
   }
 }
