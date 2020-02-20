@@ -3,33 +3,48 @@
     <v-row>
       <v-col align="center">
         <v-col>
-          <audio
-            v-if="debug"
-            ref="audio"
-            controls
-            playsinline
-          />
-        </v-col>
-        <v-col>
-          <transition name="mic">
-            <v-btn
-              :class="{'mic': recording}"
-              x-large
-              color="primary"
-              fab
-              text 
-              icon
-              @click="toggleRecording"
-            >
-              <v-icon>{{ recordingIcon }}</v-icon>
-            </v-btn>
-          </transition>
-        </v-col>
-
-        <v-col>
-          <v-btn @click="download">
-            Download (DEBUG)
+          <v-btn
+            :class="{'mic': recording}"
+            x-large
+            color="primary"
+            fab
+            text 
+            icon
+            @click="toggleRecording"
+          >
+            <v-icon>{{ recordingIcon }}</v-icon>
           </v-btn>
+        </v-col>
+        <p v-if="recording">
+          {{ detected }}
+        </p>
+        <v-col>
+          <v-card
+            :v-if="detectedHistory.length > 0"
+            class="d-inline-block mx-auto"
+          >
+            <transition name="card">
+              <virtual-list 
+                :size="virtualListSize" 
+                :remain="5"
+              >
+                <v-list-item
+                  v-for="entry in detectedHistory"
+                  :key="entry.time"
+                  :href="entry.data"
+                >
+                  <v-list-item-content>
+                    <v-list-item-title
+                      v-text="entry.data"
+                    />
+                    <v-list-item-subtitle
+                      v-text="entry.time"
+                    />
+                  </v-list-item-content>
+                </v-list-item>
+              </virtual-list>
+            </transition>
+          </v-card>
         </v-col>
       </v-col>
     </v-row>
@@ -41,13 +56,27 @@
 <script>
 import RecordRTC from 'recordrtc'
 import Axios from 'axios';
+import moment from 'moment'
+import virtualList from 'vue-virtual-scroll-list'
 export default {
   name: 'Detect',
+  components: {'virtual-list': virtualList},
   data: function () {
     return {
       recording: false,
       recordingIcon: "mdi-microphone",
-      debug: true
+      debug: true,
+      detected: "Waiting...",
+      detectedHistory: [],
+      updated: false
+    }
+  },
+  computed: {
+    virtualListSize() {
+      const unit = 12
+      const max = 5*unit
+      const currentSize = this.detectedHistory.length * unit
+      return currentSize < max ? currentSize : max
     }
   },
   methods: {
@@ -81,10 +110,25 @@ export default {
       Axios
       .post(`${server_url}/detect`, bodyFormData)
       .then((msg)=>{
-        console.log(msg)
+        if (msg.status == 200) {
+          const resp = msg.data.message
+          console.log(resp)
+          this.detected = "Detected!"
+          const entry = {
+            time: moment().format('h:mm:ss a'),
+            data: resp
+          }
+          this.detectedHistory.push(entry)
+          this.updated=true
+        }
+
+        else if (msg.status == 204) {
+          this.detected = "Waiting..."
+        }
       })
       .catch((error) => {
         console.error(error)
+        return null
       })
     },
     toggleRecording() {
@@ -107,10 +151,7 @@ export default {
     errorCallback() {
       //handle error here
     },
-    processAudio(audioURL) {
-      const audio = this.$refs.audio;
-      audio.src = audioURL;
-    },
+
     startRecording() {
       const mediaConstraints = { audio: true };
       navigator.mediaDevices
@@ -119,7 +160,7 @@ export default {
     },
     stopRecording() {
       const recordRTC = this.recordRTC;
-      recordRTC.stopRecording(this.processAudio.bind(this));
+      recordRTC.stopRecording();
       const stream = this.stream;
       stream.getAudioTracks().forEach(track => track.stop());
     },
@@ -177,5 +218,4 @@ p a {
 {
   animation: shadow-pulse 1s infinite;
 }
-
 </style>
