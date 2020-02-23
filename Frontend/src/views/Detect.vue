@@ -90,6 +90,8 @@ export default {
         timeSlice: 5000,
         ondataavailable: (blob) => {
           this.postBlob(blob)
+          this.stopRecording()
+          this.startRecording()
         }
        };
       const isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveOrOpenBlob || !!navigator.msSaveBlob);
