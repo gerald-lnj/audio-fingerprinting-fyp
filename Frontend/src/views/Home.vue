@@ -16,12 +16,6 @@
           >
             UPLOAD
           </v-btn>
-          <v-snackbar
-            v-model="snackbar"
-            :timeout="3000"
-          >
-            Login Required!
-          </v-snackbar>
         </v-col>
 
         <v-col>
@@ -42,11 +36,15 @@ export default {
   props: {
   },
   data: () => ({
-    snackbar: false
   }),
   methods: {
     uploadLoginChecker() {
-      this.$store.state.loggedIn ? this.$router.push('upload') : this.snackbar = true;
+      if (this.$store.state.loggedIn) this.$router.push('upload')
+      else {
+        this.$store.state.snackbar.snackbarMsg = 'Login Required!'
+        this.$store.state.snackbar.flag = true
+        this.$router.push('login')
+      }
     },
     debug() {
       this.$store.commit('resetState')

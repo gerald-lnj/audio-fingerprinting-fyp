@@ -88,10 +88,10 @@
       <span class="white--text">&copy; 2019</span>
     </v-footer>
     <v-snackbar
-      v-model="snackbar"
+      v-model="$store.state.snackbar.flag"
       :timeout="3000"
     >
-      Login Required!
+      {{ $store.state.snackbar.snackbarMsg }}
     </v-snackbar>
   </v-app>
 </template>
@@ -116,7 +116,12 @@ export default {
   },
   methods: {
     uploadLoginChecker() {
-      this.$store.state.loggedIn ? this.$router.push('upload') : this.snackbar = true;
+      if (this.$store.state.loggedIn) {
+        this.$router.push('upload')
+      } else {
+        this.$store.state.snackbar.snackbarMsg = 'Login required!';
+        this.$store.state.snackbar.flag = true;
+      }
     },
   }
 };

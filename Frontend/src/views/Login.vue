@@ -103,7 +103,8 @@ export default {
 
     },
     onPasswordReset() {
-      // tbc
+      this.$store.state.snackbar.snackbarMsg = 'Sorry, we don\'t have the resources to implement password reset at this time!'
+      this.$store.state.snackbar.flag = true
     },
 
     onSubmitResetPassword() {

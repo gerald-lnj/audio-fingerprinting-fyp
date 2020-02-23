@@ -13,6 +13,10 @@ export default new Vuex.Store({
     email: '',
     refresh: '',
     jwt: '',
+    snackbar: {
+      flag: false,
+      snackbarMsg: ''
+    }
   },
   mutations: {
     updateDetails(state, resp) {
@@ -42,5 +46,9 @@ const getDefaultState= () => {
     email: '',
     refresh: '',
     jwt: '',
+    snackbar: {
+      flag: false,
+      snackbarMsg: ''
+    }
   }
 }
