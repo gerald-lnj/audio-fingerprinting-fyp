@@ -20,7 +20,7 @@
 
         <v-col>
           <v-btn
-            @click="debug"
+            @click="resetState"
           > 
             RESET STATE 
           </v-btn>
@@ -46,7 +46,7 @@ export default {
         this.$router.push('login')
       }
     },
-    debug() {
+    resetState() {
       this.$store.commit('resetState')
     }
   }

@@ -219,8 +219,8 @@ export default {
         this.files = null
         this.snackbar.flag = true
       })
-      .catch((error) => {
-        console.log(error)
+      .catch(() => {
+        // console.log(error)
         this.snackbar.snackbarMsg = 'Sorry, there was a problem!'
         this.snackbar.flag = true
       })

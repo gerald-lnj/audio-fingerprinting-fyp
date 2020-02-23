@@ -30,7 +30,6 @@ export default new Vuex.Store({
     },
     resetState(state) {
       Object.assign(state, getDefaultState())
-      console.log(state)
     }
   },
   actions: {

@@ -76,7 +76,6 @@ export default {
         return pattern.test(value) || 'Invalid e-mail.'
       },
     },
-
   }),
   methods: {
     login() {
@@ -98,20 +97,11 @@ export default {
       .catch((error)=>{
         console.log(error)
       })
-
-
-
     },
     onPasswordReset() {
       this.$store.state.snackbar.snackbarMsg = 'Sorry, we don\'t have the resources to implement password reset at this time!'
       this.$store.state.snackbar.flag = true
     },
-
-    onSubmitResetPassword() {
-      // tbc
-    }
-
-
   },
 };
 </script>

@@ -81,12 +81,6 @@
       </v-container>
     </v-content>
 
-    <v-footer
-      color="#003459"
-      app
-    >
-      <span class="white--text">&copy; 2019</span>
-    </v-footer>
     <v-snackbar
       v-model="$store.state.snackbar.flag"
       :timeout="3000"
