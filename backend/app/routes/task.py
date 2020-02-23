@@ -214,7 +214,7 @@ def detect():
             jsonify(
                 {
                     "ok": True,
-                    "message": "Matched to {}".format(ultrasound_id["content"]),
+                    "message": ultrasound_id["content"],
                 }
             ),
             200,
