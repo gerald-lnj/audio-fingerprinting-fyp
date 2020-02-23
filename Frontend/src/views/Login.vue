@@ -2,25 +2,28 @@
   <v-row>
     <v-col align="center">
       <v-col>
-        <v-text-field
-          v-model="email"
-          :rules="[rules.required, rules.email]"
-          label="Email"
-        />
-      </v-col>
-
-      <v-col>
-        <v-text-field
-          v-model="password"
-          :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-          :rules="[rules.required]"
-          :type="showPassword ? 'text' : 'password'"
-          name="input-10-1"
-          label="Password"
-          hint="At least 8 characters"
-          counter
-          @click:append="showPassword = !showPassword"
-        />
+        <v-form>
+          <v-container>
+            <v-text-field
+              v-model="email"
+              :rules="[rules.required, rules.email]"
+              autocomplete="email"
+              label="Email"
+            />
+            <v-text-field
+              v-model="password"
+              :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+              :rules="[rules.required]"
+              :type="showPassword ? 'text' : 'password'"
+              name="input-10-1"
+              label="Password"
+              hint="At least 8 characters"
+              counter
+              autocomplete="password"
+              @click:append="showPassword = !showPassword"
+            />
+          </v-container>
+        </v-form>
       </v-col>
 
       <v-col>
