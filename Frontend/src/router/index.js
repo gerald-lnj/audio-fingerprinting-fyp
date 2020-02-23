@@ -7,6 +7,7 @@ import Account from '../views/Account.vue'
 import store from '../store/index'
 import Upload from '../views/Upload.vue'
 import Detect from '../views/Detect.vue'
+import Register from '../views/Register.vue'
 
 Vue.use(VueRouter);
 
@@ -57,6 +58,11 @@ const routes = [
     path: '/detect',
     name: 'Detect',
     component: Detect,
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register,
   },
 ];
 
