@@ -63,31 +63,6 @@ export default {
 </script>
 
 <style scoped>
-.title {
-  font-family: "Autumn", "Avenir", Helvetica, Arial, sans-serif;
-  letter-spacing: 5px;
-  font-size: 44px;
-  color: white;
-}
-.login {
-  margin-top: 40px;
-}
-.input {
-  width: 75%;
-  padding-bottom: 10px;
-  padding-top: 10px;
-}
-button {
-  cursor: pointer;
-}
-p a {
-  text-decoration: underline;
-  color: #fffb11;
-  cursor: pointer;
-}
-.alert-style {
-  min-width: 200px;
-}
 /* Inserting this collapsed row between two flex items will make
 * the flex item that comes after it break to a new row */
 .break {
