@@ -83,7 +83,6 @@
 <script>
 import Axios from '../utilities/api';
 export default {
-
   name: "Upload",
   data: () => ({
     videoDuration: null,
@@ -158,30 +157,8 @@ export default {
 
       return snackbar
     },
-    tempNumFlag: function() {
-      let tempNumFlag = true
-      for (let i = 0; i < this.linkFormData.length; i++) {
-        let currentLink = this.linkFormData[i]
-        // set tempNumFlag if start/end fail rule validation
-        if (
-          (this.rules.numRules(currentLink.start)!= true) || 
-          (this.rules.numRules(currentLink.end) != true)
-        ) tempNumFlag = false
-      }
-      return tempNumFlag
-    },
-    tempLinkFlag: function() {
-      let tempLinkFlag = true
-      for (let i = 0; i < this.linkFormData.length; i++) {
-        let currentLink = this.linkFormData[i]
-
-        // set tempLinkFlag if link fails validation
-        if ((this.rules.linkRules(currentLink.link)) != true) tempLinkFlag = false
-      }
-      return tempLinkFlag
-    },
     submit: function() {
-      return (!this.snackbar.flag && this.tempNumFlag && this.tempLinkFlag && this.videoDuration && this.linkFormData.length>0)
+      return (!this.snackbar.flag && this.valid && this.videoDuration && this.linkFormData.length>0)
     }
   },
   methods: {
