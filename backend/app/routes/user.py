@@ -55,7 +55,15 @@ def auth_user():
 
 @app.route("/register", methods=["POST"])
 def register():
-    """ register user endpoint """
+    """
+    register user endpoint
+    expects form data in the format:
+    "name": string,
+    "email": email string,
+    "password": string, len>8,
+    
+    more details in user_schema
+    """
     try:
         data = request.get_json(force=True)
         user_schema(request.get_json(force=True))
