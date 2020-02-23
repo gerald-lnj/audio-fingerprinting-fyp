@@ -22,7 +22,7 @@ ROOT_PATH = os.environ.get("ROOT_PATH")
 
 @jwt.unauthorized_loader
 def unauthorized_response(callback):
-    return jsonify({"ok": False, "message": "Missing Authorization Header"}), 401
+    return jsonify({"ok": False, "message": "Unauthorised"}), 401
 
 
 @app.route("/auth", methods=["POST"])
