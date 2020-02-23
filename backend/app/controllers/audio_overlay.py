@@ -19,7 +19,9 @@ def main(video_filepath, time_dicts):
     """
     # video setup
 
-    original_audio_duration = float(ffmpeg.probe(video_filepath)['streams'][0]['duration'])
+    original_audio_duration = float(
+        ffmpeg.probe(video_filepath)["streams"][0]["duration"]
+    )
 
     # rounded down to seconds
     original_audio_duration = original_audio_duration - original_audio_duration % 1
@@ -49,13 +51,11 @@ def main(video_filepath, time_dicts):
     output_filepath = overlay(time_dicts, video_filepath)
 
     if output_filepath is None:
-        #TODO: add some kinda debeg logging system
-        print('Audio Overlaying Failed')
+        # TODO: add some kinda debeg logging system
+        print("Audio Overlaying Failed")
 
     else:
         return output_filepath
-
-
 
 
 def overlay(time_dicts, video_filepath):
@@ -72,12 +72,12 @@ def overlay(time_dicts, video_filepath):
     # -filter_complex amix=inputs={{num streams}}:duration=longest
     # -c:v copy -c:a aac -b:a 320k -async 1 {{output filepath}}
 
-    output_filepath = video_filepath.replace('uploaded_files', 'output_video')
+    output_filepath = video_filepath.replace("uploaded_files", "output_video")
 
-    ffmpeg_builder = ['ffmpeg', '-hide_banner', '-loglevel', 'panic']
+    ffmpeg_builder = ["ffmpeg", "-hide_banner", "-loglevel", "panic"]
 
     # add input video args
-    ffmpeg_builder.extend(['-i', video_filepath])
+    ffmpeg_builder.extend(["-i", video_filepath])
 
     # add input audio args
     for time_dict in time_dicts:
@@ -89,31 +89,27 @@ def overlay(time_dicts, video_filepath):
             for i in range(3):
                 # TODO: link audio is currently 2.5s long. aiming to change to 10s.
                 # temp workaround: loop audio 3 times (7.5s)
-                time_cursor_temp = time_cursor + i*3
-                ffmpeg_builder.extend(['-itsoffset', str(time_cursor_temp), '-i', filepath])
+                time_cursor_temp = time_cursor + i * 3
+                ffmpeg_builder.extend(
+                    ["-itsoffset", str(time_cursor_temp), "-i", filepath]
+                )
                 # ffmpeg_builder.extend(['-itsoffset', str(time_cursor + 3), '-i', filepath])
                 # ffmpeg_builder.extend(['-itsoffset', str(time_cursor + 6), '-i', filepath])
 
             time_cursor += 10
 
     # add filter args
-    ffmpeg_builder.extend([
-        '-filter_complex',
-        'amix=inputs={}:duration=longest'.format(str(len(time_dicts)*3 + 1))
-    ])
+    ffmpeg_builder.extend(
+        [
+            "-filter_complex",
+            "amix=inputs={}:duration=longest".format(str(len(time_dicts) * 3 + 1)),
+        ]
+    )
 
     # add output args
-    ffmpeg_builder.extend([
-        '-c:v',
-        'copy',
-        '-c:a',
-        'aac',
-        '-b:a',
-        '320k',
-        '-async',
-        '1',
-        output_filepath
-    ])
+    ffmpeg_builder.extend(
+        ["-c:v", "copy", "-c:a", "aac", "-b:a", "320k", "-async", "1", output_filepath]
+    )
 
     try:
         subprocess.run(ffmpeg_builder, check=True)

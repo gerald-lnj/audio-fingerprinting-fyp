@@ -7,8 +7,7 @@ from flask import Flask
 from flask_pymongo import PyMongo
 from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
-
-
+from flask_cors import CORS
 from dotenv import load_dotenv
 
 load_dotenv(".flaskenv")
@@ -30,12 +29,18 @@ class JSONEncoder(json.JSONEncoder):
 # create the flask object
 app = Flask(__name__)
 
+# CORS stuff
+CORS(app)
+
 # config mongo uri
 app.config["MONGO_URI"] = os.getenv("MONGO_URI")
 
 # config JWT stuff
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(days=1)
+
+# app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(days=1)
+# app.config["JWT_REFRESH_TOKEN_EXPIRES"] = datetime.timedelta(days=14)
+
 
 # config uploader stuff
 app.config["UPLOADED_VIDEOS_DEST"] = os.getenv("UPLOADED_VIDEOS_DEST")

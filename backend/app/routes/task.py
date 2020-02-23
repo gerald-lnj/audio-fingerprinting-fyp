@@ -21,7 +21,6 @@ from ..controllers import (
 )
 
 
-
 VIDEOS = UploadSet(name="videos", extensions=("mp4"))
 configure_uploads(app, VIDEOS)
 CWD = os.getcwd()
@@ -29,7 +28,9 @@ CWD = os.getcwd()
 USERS_COLLECTION = mongo.db.users
 VIDEOS_COLLECTION = mongo.db.videos  # holds reference to user
 ULTRASOUND_COLLECTION = mongo.db.ultrasound  # holds reference to video
-FINGERPRINTS_COLLECTION = mongo.db.fingerprints # holds reference to ultrasound (in couples)
+FINGERPRINTS_COLLECTION = (
+    mongo.db.fingerprints
+)  # holds reference to ultrasound (in couples)
 
 
 @app.route("/upload", methods=["POST"])
@@ -60,10 +61,11 @@ def upload_file():
     # 2a: save file
 
     time = (
-        datetime.now().isoformat(sep='T', timespec='seconds')
-        .replace('T', '')
-        .replace(':', '')
-        .replace('-', '')
+        datetime.now()
+        .isoformat(sep="T", timespec="seconds")
+        .replace("T", "")
+        .replace(":", "")
+        .replace("-", "")
     )
     try:
         video_filename = VIDEOS.save(video, name="{}-{}.".format(filename, time))
@@ -92,7 +94,7 @@ def upload_file():
     for i, _p in enumerate(time_dicts):
         # 3aii: use link as seed to generate 10s wav file,
         # add document to ultrasound collection
-        seed = '{}{}{}{}'.format(_p["start"], _p["end"], _p["link"], video_id)
+        seed = "{}{}{}{}".format(_p["start"], _p["end"], _p["link"], video_id)
         ultrasound_filename = create_ultrasound.noise_generator(seed)
         time_dicts[i]["filepath"] = "{}/output_audio/{}.wav".format(
             CWD, ultrasound_filename
@@ -150,7 +152,7 @@ def upload_file():
 @app.route("/get-video/<string:video_name>", methods=["GET"])
 @jwt_required
 def download(video_name):
-    '''func to dynamically retrieve video files'''
+    """func to dynamically retrieve video files"""
     user = get_jwt_identity()
     if user["email"] in video_name:
         try:
@@ -172,19 +174,26 @@ def download(video_name):
             404,
         )
 
-@app.route("/match", methods=["POST"])
-def match():
-    '''function that calls the matching func'''
+
+@app.route("/detect", methods=["POST"])
+def detect():
+    """function that calls the matching func"""
     # match_audio = request.files.get("file")
     # form_data = request.form
     # TODO: wav file validation
 
+    # read file from req
+    if 'audio' not in request.files.keys():
+        return (
+            jsonify(
+                {"ok": False, "message": "Expected WAV file missing"}
+            ),
+            415,
+        )
 
-    # debug stuff
+    audio_file = request.files.get('audio')
+    _, data = wavfile.read(audio_file)
 
-    # read wavfile
-    _, data = wavfile.read("/Users/gerald/Documents/FYP/Bitcoin-20200205142533.wav")
- 
     # get peaks
     peaks = audio_analysis.analyse(data)
     # generate fingerprints
@@ -195,31 +204,42 @@ def match():
 
     if object_id is None:
         return (
-            jsonify(
-                {"ok": False, "message": "No matches found"}
-            ),
-            404,
+            jsonify({"ok": True, "message": "No matches found"}),
+            204,
         )
     else:
-        ultrasound_id = ULTRASOUND_COLLECTION.find_one({'_id': object_id})
-        video_id = VIDEOS_COLLECTION.find_one({'_id': ultrasound_id['video_id']})
-        return jsonify(
-            {
-                "ok": True,
-                "message": "Matched to {}".format(ultrasound_id['content'])
-            }
-            ), 200
+        ultrasound_id = ULTRASOUND_COLLECTION.find_one({"_id": object_id})
+        video_id = VIDEOS_COLLECTION.find_one({"_id": ultrasound_id["video_id"]})
+        return (
+            jsonify(
+                {
+                    "ok": True,
+                    "message": ultrasound_id["content"],
+                }
+            ),
+            200,
+        )
 
 
 @app.route("/debug", methods=["POST"])
+@jwt_required
 def debug():
-    ''' endpoint for me to test quick stuff'''
-    return 'ok'
+    """ endpoint for me to test quick stuff"""
+    return (
+        jsonify(
+            {
+                "ok": True,
+                "message": 'testing',
+            }
+        ),
+        200,
+    )
 
-@app.route('/purge')
+
+@app.route("/purge", methods=[""])
 def purge():
-    '''purge all documents in all collections except users'''
+    """purge all documents in all collections except users"""
     VIDEOS_COLLECTION.remove({})
     ULTRASOUND_COLLECTION.remove({})
     FINGERPRINTS_COLLECTION.remove({})
-    return('ok')
+    return "purged records"

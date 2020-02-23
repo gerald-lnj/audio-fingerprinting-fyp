@@ -94,3 +94,7 @@ fingerprintBackend/service_account_private_key.json
 **/.DS_Store
 
 *.pyc
+
+backend/uploaded_files/
+backend/ouput_audio/
+backend/ouput_video/

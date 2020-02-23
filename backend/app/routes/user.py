@@ -11,6 +11,7 @@ from flask_jwt_extended import (
 from app import app, mongo, flask_bcrypt, jwt
 from app.schemas import user_schema
 from validx import exc
+import traceback
 
 # import logger
 
@@ -21,7 +22,7 @@ ROOT_PATH = os.environ.get("ROOT_PATH")
 
 @jwt.unauthorized_loader
 def unauthorized_response(callback):
-    return jsonify({"ok": False, "message": "Missing Authorization Header"}), 401
+    return jsonify({"ok": False, "message": "Unauthorised"}), 401
 
 
 @app.route("/auth", methods=["POST"])
@@ -55,38 +56,58 @@ def auth_user():
 
 @app.route("/register", methods=["POST"])
 def register():
-    """ register user endpoint """
+    """
+    register user endpoint
+    expects form data in the format:
+    "name": string,
+    "email": email string,
+    "password": string, len>8,
+    
+    more details in user_schema
+    """
+    form_data = request.form
     try:
-        data = request.get_json(force=True)
-        user_schema(request.get_json(force=True))
+        # data = request.get_json(force=True)
+        # user_schema(request.get_json(force=True))
+        user_schema(form_data)
     except exc.ValidationError as e:
-        errorMsg = []
+
         return jsonify({"ok": False, "message": "Bad request parameters: "}), 400
     else:
-        user = mongo.db.users.find_one({"email": data["email"]}, {"_id": 0})
+        try:
+            user = mongo.db.users.find_one({"email": form_data["email"]}, {"_id": 0})
 
-        if user == None:
-            data["password"] = flask_bcrypt.generate_password_hash(
-                data["password"]
-            ).decode("utf-8")
-            mongo.db.users.insert_one(data)
-            return jsonify({"ok": True, "message": "User created successfully!"}), 200
-        else:
+            if user == None:
+                mongo.db.users.insert_one({
+                    'name': form_data['name'],
+                    'email': form_data['email'],
+                    'password': flask_bcrypt.generate_password_hash(form_data["password"]).decode("utf-8")
+                })
+                return jsonify({"ok": True, "message": "User created successfully!"}), 200
+            else:
+                return (
+                    jsonify(
+                        {"ok": False, "message": "User with this email already exists!"}
+                    ),
+                    409,
+                )
+        except Exception as e:
+            print(traceback.format_exc())
             return (
                 jsonify(
-                    {"ok": False, "message": "User with this email already exists!"}
-                ),
-                200,
+                    {"ok": False, "message": "Unexpected error occured!"}
+                ), 500
             )
 
 
 @app.route("/refresh", methods=["POST"])
 @jwt_refresh_token_required
 def refresh():
-    """ refresh token endpoint """
     current_user = get_jwt_identity()
-    ret = {"token": create_access_token(identity=current_user)}
-    return jsonify({"ok": True, "data": ret}), 200
+    ret = {
+        'access_token': create_access_token(identity=current_user)
+    }
+    return jsonify(ret), 200
 
 
 @app.route("/user", methods=["GET", "DELETE", "PATCH"])
