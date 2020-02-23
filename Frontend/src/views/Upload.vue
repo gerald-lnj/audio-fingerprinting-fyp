@@ -173,6 +173,8 @@ export default {
         vid.ondurationchange = function() {
           that.videoDuration = Math.round(this.duration);
         };
+      } else {
+        this.videoDuration = null
       }
     },
     addLink() {
