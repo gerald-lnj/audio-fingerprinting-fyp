@@ -222,9 +222,18 @@ def detect():
 
 
 @app.route("/debug", methods=["POST"])
+@jwt_required
 def debug():
     """ endpoint for me to test quick stuff"""
-    return "ok"
+    return (
+        jsonify(
+            {
+                "ok": True,
+                "message": 'testing',
+            }
+        ),
+        200,
+    )
 
 
 @app.route("/purge", methods=[""])
