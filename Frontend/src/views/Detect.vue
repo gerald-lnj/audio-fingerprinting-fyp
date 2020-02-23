@@ -55,7 +55,7 @@
 
 <script>
 import RecordRTC from 'recordrtc'
-import Axios from 'axios';
+import Axios from '../utilities/api';
 import moment from 'moment'
 import virtualList from 'vue-virtual-scroll-list'
 export default {

@@ -56,7 +56,7 @@
 </template>
 
 <script>
-import Axios from "axios";
+import Axios from "../utilities/api";
 export default {
 
   name: "Login",
