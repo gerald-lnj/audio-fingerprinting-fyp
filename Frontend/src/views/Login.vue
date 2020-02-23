@@ -42,7 +42,7 @@
           <br>
         </p>
         <v-btn
-          to="/sign-up"
+          to="/register"
         >
           Sign Up Here
         </v-btn>
