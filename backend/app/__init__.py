@@ -37,7 +37,10 @@ app.config["MONGO_URI"] = os.getenv("MONGO_URI")
 
 # config JWT stuff
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(days=1)
+
+# app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(days=1)
+# app.config["JWT_REFRESH_TOKEN_EXPIRES"] = datetime.timedelta(days=14)
+
 
 # config uploader stuff
 app.config["UPLOADED_VIDEOS_DEST"] = os.getenv("UPLOADED_VIDEOS_DEST")
