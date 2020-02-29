@@ -79,23 +79,23 @@ export default {
   }),
   methods: {
     login() {
-      // const data = {
-      //   "email": this.email,
-      //   "password": this.password
-      // }
-      const data = {
-        "email": 'test@test.com',
-        "password": '12345'
-      }
+      const bodyFormData = new FormData();
+
+      // bodyFormData.set('email', this.email)
+      // bodyFormData.set('password', this.password)
+
+      bodyFormData.set('email', 'test@test.com')
+      bodyFormData.set('password', '12345')
+
       const server_url = process.env.VUE_APP_SERVER_URL
-      Axios.post(`${server_url}/auth`, data)
+      Axios.post(`${server_url}/auth`, bodyFormData)
       .then((resp)=> {
         this.$store.commit('updateDetails', resp)
         this.$store.commit('updateLoginStatus')
         this.$router.push('/')
       })
       .catch((error)=>{
-        console.log(error)
+        console.error(error)
       })
     },
     onPasswordReset() {
