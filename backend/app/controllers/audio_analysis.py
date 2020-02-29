@@ -71,12 +71,13 @@ def find_peak(spectrum):
     band = 0
     for i, _ in enumerate(spectrum):
         for freq in range(1, CHUNK_SIZE // 2):
-            mag = abs(spectrum[i][freq])
-            if freq > RANGE[band]:
-                band += 1
-            if mag > highscores[i][band]:
-                highscores[i][band] = mag
-                peak[i][band] = freq
+            if freq >= RANGE[0]:
+                mag = abs(spectrum[i][freq])
+                if freq > RANGE[band]:
+                    band += 1
+                if mag > highscores[i][band]:
+                    highscores[i][band] = mag
+                    peak[i][band] = freq
     peak_filtered = []
 
     total_mag = [0 for i in range(((len(peak) - 1) // FILTER_WINDOW_SIZE) + 1)]
