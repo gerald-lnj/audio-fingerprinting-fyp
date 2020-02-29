@@ -40,7 +40,7 @@ def main(video_filepath, time_dicts):
     assert check_time_list[-1] <= usable_audio_duration
 
     for i in range(len(check_time_list) - 1):
-        assert check_time_list[i] % 10 == 0
+        # assert check_time_list[i] % 10 == 0
 
         if i % 2 == 0:
             assert check_time_list[i] < check_time_list[i + 1]
