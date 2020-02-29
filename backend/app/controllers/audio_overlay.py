@@ -87,8 +87,6 @@ def overlay(time_dicts, video_filepath):
         time_cursor = start
         while time_cursor < end:
             for i in range(3):
-                # TODO: link audio is currently 2.5s long. aiming to change to 10s.
-                # temp workaround: loop audio 3 times (7.5s)
                 time_cursor_temp = time_cursor + i * 3
                 ffmpeg_builder.extend(
                     ["-itsoffset", str(time_cursor_temp), "-i", filepath]
