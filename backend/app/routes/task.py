@@ -56,7 +56,7 @@ def upload_file():
     except exc.ValidationError:
         return jsonify({"ok": False, "message": "Bad request parameters"}), 400
 
-    email = form_data["email"]
+    email = get_jwt_identity()['email']
     filename = request.files["file"].filename.split(".")[0]
     # 2a: save file
 

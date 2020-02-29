@@ -115,6 +115,7 @@ def refresh():
 @jwt_required
 def user():
     """ route read user """
+    email = get_jwt_identity()["email"]
     if request.method == "GET":
         query = request.args
         data = mongo.db.users.find_one(query, {"_id": 0})
