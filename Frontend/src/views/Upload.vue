@@ -155,16 +155,12 @@ export default {
       {
         start: null,
         end: null, 
-        link: null,
+        link: '',
       }
     ],
     rules: {
       numRules: v => {
-        if (/([0-9]+)/g.test(v)) {
-          if (parseInt(v)%10 == 0) return true
-          else return "Please enter multiples of 10!"
-        }
-         else return "Please enter a number!"
+        return /([0-9]+)/g.test(v) ? true: "Please enter a number!"
       },
       linkRules: v => {
         if (/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/g.test(v)) {
@@ -199,6 +195,11 @@ export default {
           // check start < end
           if (currentLink.start >= currentLink.end) {
             errorMessages.push('Make sure your start and end times are in order!')
+            error = true
+          }
+          
+          if ((currentLink.start - currentLink.end) % 10 != 0) {
+            errorMessages.push('Duration has to be in multiples of 10 seconds!')
             error = true
           }
 
