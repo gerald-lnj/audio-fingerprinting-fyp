@@ -71,7 +71,7 @@
             placeholder="mp4 only!"
             label="Select video"
             :show-size="1000"
-            @change="getVideoDuration"
+            @change="updateVideoDetails"
           />
         </v-col>
         <v-col>
@@ -233,9 +233,9 @@ export default {
     }
   },
   methods: {
-    getVideoDuration(file) {
+    updateVideoDetails(file) {
+      const vid = this.$refs.video
       if (file) {
-        const vid = document.createElement('video');
         // create url to use as the src of the video
         const fileURL = URL.createObjectURL(file);
         vid.src = fileURL;
@@ -246,6 +246,7 @@ export default {
         };
       } else {
         this.videoDuration = null
+        vid.src = null
       }
     },
     addLink(start, end, link) {
