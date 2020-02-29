@@ -116,22 +116,20 @@ def refresh():
 def user():
     """ route read user """
     email = get_jwt_identity()["email"]
+
     if request.method == "GET":
-        query = request.args
-        data = mongo.db.users.find_one(query, {"_id": 0})
+        data = mongo.db.users.find_one({"email": email}, {"_id": 0})
         return jsonify({"ok": True, "data": data}), 200
 
-    data = request.get_json()
     if request.method == "DELETE":
-        if data.get("email", None) is not None:
-            db_response = mongo.db.users.delete_one({"email": data["email"]})
-            if db_response.deleted_count == 1:
-                response = {"ok": True, "message": "record deleted"}
-            else:
-                response = {"ok": True, "message": "no record found"}
-            return jsonify(response), 200
+        db_response = mongo.db.users.delete_one({"email": email})
+        if db_response.deleted_count == 1:
+            response = {"ok": True, "message": "record deleted"}
         else:
-            return jsonify({"ok": False, "message": "Bad request parameters!"}), 400
+            response = {"ok": True, "message": "no record found"}
+        return jsonify(response), 200
+
+    data = request.get_json()
 
     if request.method == "PATCH":
         if data.get("query", {}) != {}:
