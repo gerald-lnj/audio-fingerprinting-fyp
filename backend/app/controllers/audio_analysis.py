@@ -14,6 +14,7 @@ RANGE = [463, 465, 467, 469, 512]
 
 FILTER_WINDOW_SIZE = 40
 
+ULTRASOUND_ABS_MIN_AMP = 8
 
 def analyse(audio):
     """
@@ -98,7 +99,8 @@ def find_peak(spectrum):
         for j, _ in enumerate(peak[i]):
             freq = peak[i][j]
             amp = abs(spectrum[i][freq])
-            if peak[i][j] != 0 and amp >= mean_mag[i // FILTER_WINDOW_SIZE]:
+            threshold = ULTRASOUND_ABS_MIN_AMP
+            if amp >= mean_mag[i // FILTER_WINDOW_SIZE] and amp>=threshold:
                 temp = [i, freq, int(amp)]
                 peak_filtered.append(temp)
     return peak_filtered
