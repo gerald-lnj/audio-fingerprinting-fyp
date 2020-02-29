@@ -84,5 +84,4 @@ def match(fingerprints):
         result = temp_result, temp_max
     else:
         result = None, None
-    print(result)
     return result

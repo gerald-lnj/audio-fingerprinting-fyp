@@ -45,7 +45,7 @@ def fft(audio):
     # When turning into frequency domain we'll need complex numbers:
     # Complex[][] results = new Complex[amount_possible][];
     # a list that is to hold lists of complex num, of len amount_possible
-    results = []
+    spectrum = []
 
     # For all the chunks:
     for times in range(amount_possible):
@@ -55,14 +55,16 @@ def fft(audio):
             complex_temp[i] = complex(audio[times * CHUNK_SIZE + i])
         complex_final = hann_window(complex_temp)
         # perform FFT unitary forward transform on complex_final, and append to results
-        results.append(np.fft.fft(complex_final, norm="ortho"))
+        spectrum.append(np.fft.fft(complex_final, norm="ortho"))
 
-    return results
+    return spectrum
 
 
 def find_peak(spectrum):
     """
     takes in 2d array spectrum, and returns peaks
+    # peak = [..., anchor, ...]
+    # anchor = [time,  freq, amp]
     """
     peak = [[0 for i in range(len(RANGE))] for j in range(len(spectrum))]
     highscores = [[0 for i in range(len(RANGE))] for j in range(len(spectrum))]

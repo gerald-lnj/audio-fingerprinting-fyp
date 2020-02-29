@@ -203,6 +203,7 @@ def detect():
     object_id, match_max = audio_matching.match(fingerprints)
 
     if object_id is None:
+        print('Nothing detected')
         return (
             jsonify({"ok": True, "message": "No matches found"}),
             204,
@@ -210,6 +211,9 @@ def detect():
     else:
         ultrasound_id = ULTRASOUND_COLLECTION.find_one({"_id": object_id})
         video_id = VIDEOS_COLLECTION.find_one({"_id": ultrasound_id["video_id"]})
+        print('\nObjectID: {}'.format(object_id))
+        print('Contents: {}'.format(ultrasound_id["content"]))
+        print('Match_max: {}'.format(match_max))
         return (
             jsonify(
                 {
@@ -236,7 +240,7 @@ def debug():
     )
 
 
-@app.route("/purge", methods=[""])
+@app.route("/purge")
 def purge():
     """purge all documents in all collections except users"""
     VIDEOS_COLLECTION.remove({})
