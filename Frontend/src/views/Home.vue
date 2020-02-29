@@ -41,8 +41,11 @@ export default {
     uploadLoginChecker() {
       if (this.$store.state.loggedIn) this.$router.push('upload')
       else {
-        this.$store.state.snackbar.snackbarMsg = 'Login Required!'
-        this.$store.state.snackbar.flag = true
+        this.$store.commit('updateSnackbar', {
+          flag: true,
+          snackbarMsg: 'Login required!',
+          timeout: 3000
+        })
         this.$router.push('login')
       }
     },

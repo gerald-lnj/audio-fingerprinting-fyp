@@ -108,12 +108,6 @@
               </v-row>
             </v-container>
           </v-form>
-          <v-snackbar
-            v-model="snackbar.flag"
-            :timeout="5000"
-          >
-            {{ snackbar.snackbarMsg }}
-          </v-snackbar>
         </v-col>
         <v-col>
           <v-btn
@@ -181,7 +175,8 @@ export default {
     snackbar: function() {
       const snackbar = {
         flag: false,
-        snackbarMsg: null
+        snackbarMsg: null,
+        timeout: 3000
       }
 
       let error = false
@@ -225,7 +220,11 @@ export default {
       if (error) {
         snackbar.flag = error
         snackbar.snackbarMsg = errorMessages.join('\n')
+        snackbar.timeout= 0
+
       }
+
+      this.$store.commit('updateSnackbar', snackbar)
 
       return snackbar
     },
@@ -296,14 +295,22 @@ export default {
             link: null,
           }
         ]
-        this.snackbar.snackbarMsg = resp.data.message
+        this.$store.commit('updateSnackbar', {
+          flag: true,
+          snackbarMsg: resp.data.message,
+          timeout: 3000
+        })
         this.files = null
-        this.snackbar.flag = true
+        this.updateVideoDetails(null)
+
       })
       .catch(() => {
         // console.log(error)
-        this.snackbar.snackbarMsg = 'Sorry, there was a problem!'
-        this.snackbar.flag = true
+        this.$store.commit('updateSnackbar', {
+          flag: true,
+          snackbarMsg: 'Sorry, there was a problem!',
+          timeout: 3000
+        })
       })
     }
   },

@@ -83,7 +83,7 @@
 
     <v-snackbar
       v-model="$store.state.snackbar.flag"
-      :timeout="3000"
+      :timeout="$store.state.snackbar.timeout"
     >
       {{ $store.state.snackbar.snackbarMsg }}
     </v-snackbar>
@@ -97,8 +97,7 @@ export default {
   },
   data: () => ({
     drawer: false,
-    snackbar: false
-
+    snackbar: false,
   }),
   computed: {
     buttonText() {
@@ -116,11 +115,14 @@ export default {
   },
   methods: {
     uploadLoginChecker() {
-      if (this.$store.state.loggedIn) {
-        this.$router.push('upload')
-      } else {
-        this.$store.state.snackbar.snackbarMsg = 'Login required!';
-        this.$store.state.snackbar.flag = true;
+      if (this.$store.state.loggedIn) this.$router.push('upload')
+      else {
+        this.$store.commit('updateSnackbar', {
+          flag: true,
+          snackbarMsg: 'Login required!',
+          timeout: 3000
+        })
+        this.$router.push('login')
       }
     },
   }

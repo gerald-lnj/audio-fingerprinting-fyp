@@ -79,8 +79,11 @@ export default {
       Axios
       .post(`${server_url}/register`, bodyFormData)
       .then(()=> {
-        this.$store.state.snackbar.snackbarMsg = 'Success!'
-        this.$store.state.snackbar.flag = true
+        this.$store.commit('updateSnackbar', {
+          flag: true,
+          snackbarMsg: 'Success!',
+          timeout: 3000
+        })
         this.$router.push('login')
       })
       .catch(error => {
@@ -88,15 +91,23 @@ export default {
         switch (statusCode) {
           case 409:
             // email already exists
-            this.$store.state.snackbar.snackbarMsg = 'User with this email already exists!'
-            this.$store.state.snackbar.flag = true
+            this.$store.commit('updateSnackbar', {
+              flag: true,
+              snackbarMsg: 'User with this email already exists!',
+              timeout: 3000
+
+            })
             break;
         
           default:
             // 500 (internal server)
             // 400 (bad req params)
-            this.$store.state.snackbar.snackbarMsg = 'Sorry, we encountered an error. Try again later!'
-            this.$store.state.snackbar.flag = true
+            this.$store.commit('updateSnackbar', {
+              flag: true,
+              snackbarMsg: 'Sorry, we encountered an error. Try again later!',
+              timeout: 3000
+
+            })
             break;
         }
       })

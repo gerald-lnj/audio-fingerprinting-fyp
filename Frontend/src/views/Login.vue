@@ -99,8 +99,11 @@ export default {
       })
     },
     onPasswordReset() {
-      this.$store.state.snackbar.snackbarMsg = 'Sorry, we don\'t have the resources to implement password reset at this time!'
-      this.$store.state.snackbar.flag = true
+      this.$store.commit('updateSnackbar', {
+        flag: true,
+        snackbarMsg: 'Sorry, we don\'t have the resources to implement password reset at this time!',
+        timeout: 3000
+      })
     },
   },
 };
