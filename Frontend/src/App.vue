@@ -108,6 +108,12 @@ export default {
       return this.$store.state.loggedIn ? 'account' : 'login'
     }
   },
+  mounted() {
+    this.$store.commit('updateWindowWidth', window.innerWidth)
+    window.onresize = () => {
+      this.$store.commit('updateWindowWidth', window.innerWidth)
+    }
+  },
   methods: {
     uploadLoginChecker() {
       if (this.$store.state.loggedIn) {

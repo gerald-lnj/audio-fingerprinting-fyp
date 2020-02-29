@@ -18,6 +18,7 @@ export default new Vuex.Store({
       snackbarMsg: ''
     }
   },
+    windowWidth: null
   mutations: {
     updateDetails(state, resp) {
       state.email=resp.data.data.email
@@ -30,6 +31,10 @@ export default new Vuex.Store({
     },
     resetState(state) {
       Object.assign(state, getDefaultState())
+    },
+    updateWindowWidth(state, windowWidth) {
+      state.windowWidth = windowWidth
+    },
     }
   },
   actions: {
@@ -49,5 +54,6 @@ const getDefaultState= () => {
       flag: false,
       snackbarMsg: ''
     }
+    windowWidth: null
   }
 }
