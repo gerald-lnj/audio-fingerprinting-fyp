@@ -5,6 +5,65 @@
       justify="center"
     >
       <v-col align="center">
+        <v-card
+          v-show="videoDuration"
+          class="mx-auto"
+          tile
+        >
+          <v-col v-show="videoDuration">
+            <video
+              ref="video"
+              controls
+              playsinline
+              :width="$store.state.windowWidth -4*12"
+              height="auto" 
+              @timeupdate="insertSeekTime = Math.floor($event.target.currentTime)"
+            />
+          </v-col>
+          <v-col max-width="300">
+            <span class="subheading">Duration (Multiples of 10)</span>
+            <v-slider
+              v-model="insertDuration"
+              class="align-center"
+              :max="max"
+              :min="0"
+              step="10"
+              ticks="always"
+              thumb-label="always"
+              :thumb-size="24"
+            />
+          </v-col>
+          <v-col>
+            <v-form v-model="tempValid">
+              <v-text-field
+                v-model="insertSeekTime"
+                label="Start (seconds)"
+                :rules="[rules.numRules]"
+                disabled
+              />
+              <v-text-field
+                v-model="tempEndTime"
+                label="End (Seconds)"
+                :rules="[rules.numRules]"
+                disabled
+              />
+              <v-text-field
+                v-model="tempLink"
+                label="Link"
+                :rules="[rules.linkRules]"
+              />
+            </v-form>
+          </v-col>
+          <v-col>
+            <v-btn
+              :disabled="(insertDuration<=0) || !tempValid"
+              @click="addLink(insertSeekTime, tempEndTime, tempLink)"
+            >
+              Add link here
+            </v-btn>
+          </v-col>
+        </v-card>
+        
         <v-col>
           <v-file-input
             v-model="files"
@@ -61,7 +120,7 @@
             fab
             small
             bottom
-            @click="addLink"
+            @click="addLink(null, null, '')"
           >
             <v-icon>mdi-plus</v-icon>
           </v-btn>
@@ -85,6 +144,10 @@ import Axios from '../utilities/api';
 export default {
   name: "Upload",
   data: () => ({
+    tempValid: false,
+    insertSeekTime: 0,
+    insertDuration: 10,
+    tempLink: '',
     videoDuration: null,
     files: null,
     valid: false,
@@ -111,6 +174,14 @@ export default {
     },
   }),
   computed: {
+    tempEndTime: function () {
+      return this.insertSeekTime+this.insertDuration
+    },
+    max: function() {
+      const durationRemaining = this.videoDuration - this.insertSeekTime
+
+      return durationRemaining - durationRemaining%10
+    },
     snackbar: function() {
       const snackbar = {
         flag: false,
@@ -177,11 +248,19 @@ export default {
         this.videoDuration = null
       }
     },
-    addLink() {
+    addLink(start, end, link) {
       const linkTemplate = {
-        start: null,
-        end: null, 
-        link: "",
+        start: start,
+        end: end, 
+        link: link
+      }
+
+      if (this.linkFormData.length > 0) {
+        const lastEntry = this.linkFormData[this.linkFormData.length - 1]
+
+        if (lastEntry.start == null && lastEntry.end==null && lastEntry.link.length == 0) {
+          this.linkFormData.pop()
+        }
       }
       this.linkFormData.push(linkTemplate)
     },
