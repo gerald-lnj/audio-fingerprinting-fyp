@@ -36,19 +36,11 @@ FINGERPRINTS_COLLECTION = (
 @app.route("/upload", methods=["POST"])
 @jwt_required
 def upload_file():
-    """ pseudocode
-    1: data received: video, timestamps with links, userid
-
-    2: save video and record in db
-    3: for each link:
-      3a: use link as seed to generate 10s wav file, add document to ultrasound collection
-      3b: analyse wav file and generate peaks
-      3c: hash each fingerprint and add to database
-    4: generate new video
-    5: cleanup
+    """
+    function that handles uploading files
     """
 
-    # 1: data received: file, timestamps with links, userid
+    # data received: file, timestamps with links, userid
     video = request.files.get("file")
     form_data = request.form
     try:
@@ -58,8 +50,8 @@ def upload_file():
 
     email = get_jwt_identity()['email']
     filename = request.files["file"].filename.split(".")[0]
-    # 2a: save file
 
+    # save file
     time = (
         datetime.now()
         .isoformat(sep="T", timespec="seconds")
@@ -72,7 +64,7 @@ def upload_file():
     except UploadNotAllowed:
         return jsonify({"ok": False, "message": "The file was not allowed"}), 400
 
-    # 2b: and record in db
+    # record video and uploader to db
     video_document = {
         "name": video_filename,
         "uploader_email": email,
@@ -80,7 +72,7 @@ def upload_file():
     }
     video_id = VIDEOS_COLLECTION.insert_one(video_document).inserted_id
 
-    # 3: for each link:
+    # format formdata links for processing
     time_dicts = [
         {
             "start": int(time_entry.split("::")[0]),
@@ -91,16 +83,18 @@ def upload_file():
     ]
     time_dicts = sorted(time_dicts, key=lambda k: k["start"])
 
-    # 3ai: generate ultrasound and fingerprints and add to db
+    # for each link
     for i, _p in enumerate(time_dicts):
-        # 3aii: use link as seed to generate 10s wav file,
-        # add document to ultrasound collection
+        # use link as seed to generate 10s wav file,
         seed = "{}{}{}{}".format(_p["start"], _p["end"], _p["link"], video_id)
+
+        # generate ultrasound
         ultrasound_filename = create_ultrasound.noise_generator(seed)
         time_dicts[i]["filepath"] = "{}/output_audio/{}.wav".format(
             CWD, ultrasound_filename
         )
 
+        # record link/ultrasound to db
         ultrasound_document = {
             "type": "link",
             "content": _p["link"],
@@ -112,7 +106,7 @@ def upload_file():
             ultrasound_document
         ).inserted_id
 
-        # 3aiii: analyse wav file and generate peaks
+        # add the link/ultrasound ObjectID to time_dicts for saving to video collection
         time_dicts[i]["_id"] = ultrasound_id
 
         ultrasound_fingerprints = {}
@@ -123,9 +117,9 @@ def upload_file():
         )
         peaks = audio_analysis.analyse(data)
 
-        # 3aiv: hash each fingerprint and add to database
         fingerprints = audio_hashing.hasher(peaks, ultrasound_id)
 
+        # collate address and couples
         for fingerprint in fingerprints:
             address = fingerprint["address"]
             couple = fingerprint["couple"]
@@ -278,7 +272,10 @@ def debug():
 
 @app.route("/purge")
 def purge():
-    """purge all documents in all collections except users"""
+    """
+    purge all documents in all collections except users
+    clears records of videos from users
+    """
     VIDEOS_COLLECTION.remove({})
     ULTRASOUND_COLLECTION.remove({})
     FINGERPRINTS_COLLECTION.remove({})
