@@ -82,7 +82,8 @@ def register():
                 mongo.db.users.insert_one({
                     'name': form_data['name'],
                     'email': form_data['email'],
-                    'password': flask_bcrypt.generate_password_hash(form_data["password"]).decode("utf-8")
+                    'password': flask_bcrypt.generate_password_hash(form_data["password"]).decode("utf-8"),
+                    'videos': []
                 })
                 return jsonify({"ok": True, "message": "User created successfully!"}), 200
             else:

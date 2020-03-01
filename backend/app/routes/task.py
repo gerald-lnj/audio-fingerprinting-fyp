@@ -76,6 +76,7 @@ def upload_file():
     video_document = {
         "name": video_filename,
         "uploader_email": email,
+        "ultrasounds": []
     }
     video_id = VIDEOS_COLLECTION.insert_one(video_document).inserted_id
 
@@ -105,13 +106,18 @@ def upload_file():
             "content": _p["link"],
             "start": _p["start"],
             "end": _p["end"],
-            "video_id": ObjectId(video_id),
+            "fingerprints": []
         }
         ultrasound_id = ULTRASOUND_COLLECTION.insert_one(
             ultrasound_document
         ).inserted_id
 
         # 3aiii: analyse wav file and generate peaks
+        time_dicts[i]["_id"] = ultrasound_id
+
+        ultrasound_fingerprints = {}
+
+        # analyse ultrasound wav file and generate peaks and fingeprints
         _, data = wavfile.read(
             "{}/output_audio/{}.wav".format(CWD, ultrasound_filename)
         )
@@ -124,18 +130,48 @@ def upload_file():
             address = fingerprint["address"]
             couple = fingerprint["couple"]
 
-            if FINGERPRINTS_COLLECTION.find_one({"address": address}) is None:
+            if address not in ultrasound_fingerprints:
                 # if fingerprint address is not in collection, insert new document
-                FINGERPRINTS_COLLECTION.insert_one(
-                    {"address": address, "couple": [couple]}
-                )
+                ultrasound_fingerprints[address] = [couple]
 
             else:
                 # if fingerprint address already exists, append couple
                 # TODO: is there a way to check if couple list already includes couple?
-                FINGERPRINTS_COLLECTION.update_one(
-                    {"address": address}, {"$push": {"couple": couple}}
-                )
+                ultrasound_fingerprints[address].append(couple)
+        fingerprints_ids = []
+        for address, couple_list in ultrasound_fingerprints.items():
+            fingerprint_id = FINGERPRINTS_COLLECTION.insert_one(
+                {'address': address, 'couple': couple_list}
+            )
+            fingerprints_ids.append(fingerprint_id.inserted_id)
+        ULTRASOUND_COLLECTION.update_one(
+            {'_id': ultrasound_id},
+            {   
+                "$push": {
+                    "fingerprints": {"$each": fingerprints_ids}
+                }
+            }
+        )
+
+    VIDEOS_COLLECTION.update_one(
+        {'_id': video_id},
+        {
+            "$push":
+            {
+                "ultrasounds": {"$each": [i["_id"] for i in time_dicts]}
+            }
+        }
+    )
+
+    USERS_COLLECTION.update_one(
+        {'email': email},
+        {
+            "$push":
+            {
+                "videos": ObjectId(video_id)
+            }
+        }
+    )
 
     # 4: generate new video
     video_filepath = "{}/uploaded_files/{}".format(CWD, video_filename)
@@ -246,4 +282,5 @@ def purge():
     VIDEOS_COLLECTION.remove({})
     ULTRASOUND_COLLECTION.remove({})
     FINGERPRINTS_COLLECTION.remove({})
+    USERS_COLLECTION.update({}, {"$set": {"videos": []}}, multi=True)
     return "purged records"
