@@ -1,5 +1,6 @@
 """ controller and routes for users """
 import os
+import traceback
 from flask import request, jsonify
 from flask_jwt_extended import (
     create_access_token,
@@ -8,10 +9,9 @@ from flask_jwt_extended import (
     jwt_refresh_token_required,
     get_jwt_identity,
 )
+from validx import exc
 from app import app, mongo, flask_bcrypt, jwt
 from app.schemas import user_schema
-from validx import exc
-import traceback
 
 # import logger
 
@@ -36,7 +36,7 @@ def auth_user():
 
     try:
         user_schema(form_data)
-    except exc.ValidationError as e:
+    except exc.ValidationError:
         return jsonify({"ok": False, "message": "Bad request parameters"}), 400
     else:
         user_doc = USERS_COLLECTION.find_one(
@@ -66,7 +66,7 @@ def register():
     "name": string,
     "email": email string,
     "password": string, len>8,
-    
+
     more details in user_schema
     """
     form_data = request.form
@@ -74,7 +74,7 @@ def register():
         # data = request.get_json(force=True)
         # user_schema(request.get_json(force=True))
         user_schema(form_data)
-    except exc.ValidationError as e:
+    except exc.ValidationError:
 
         return jsonify({"ok": False, "message": "Bad request parameters: "}), 400
     else:
@@ -96,7 +96,7 @@ def register():
                     ),
                     409,
                 )
-        except Exception as e:
+        except Exception:
             print(traceback.format_exc())
             return (
                 jsonify(
@@ -108,6 +108,9 @@ def register():
 @app.route("/refresh", methods=["POST"])
 @jwt_refresh_token_required
 def refresh():
+    '''
+    When JWT has expired, issue new one with refresh token
+    '''
     current_user = get_jwt_identity()
     ret = {
         'access_token': create_access_token(identity=current_user)
@@ -139,5 +142,4 @@ def user():
         if data.get("query", {}) != {}:
             USERS_COLLECTION.update_one(data["query"], {"$set": data.get("payload", {})})
             return jsonify({"ok": True, "message": "record updated"}), 200
-        else:
-            return jsonify({"ok": False, "message": "Bad request parameters!"}), 400
+        return jsonify({"ok": False, "message": "Bad request parameters!"}), 400
