@@ -1,6 +1,7 @@
 """ controller and routes for users """
 import os
 import traceback
+from bson.objectid import ObjectId
 from flask import request, jsonify
 from flask_jwt_extended import (
     create_access_token,
@@ -11,7 +12,9 @@ from flask_jwt_extended import (
 )
 from validx import exc
 from app import app, mongo, flask_bcrypt, jwt
-from app.schemas import user_schema
+from app.schemas import user_schema, delete_vid_schema
+from pymongo import DeleteOne
+from pymongo.errors import BulkWriteError
 
 # import logger
 
@@ -126,12 +129,15 @@ def user():
     email = get_jwt_identity()["email"]
 
     if request.method == "GET":
-        data = USERS_COLLECTION.find_one({"email": email}, {"_id": 0})
-        video_ids = data['videos']
+        user_doc = USERS_COLLECTION.find_one({"email": email}, {"_id": 0})
+        video_ids = user_doc['videos']
         result = list_videos(video_ids)
         return jsonify({"ok": True, "data": result}), 200
 
     if request.method == "DELETE":
+        user_doc = USERS_COLLECTION.find_one({"email": email}, {"_id": 0})
+        for video_id in user_doc['videos']:
+            delete_video(video_id)
         db_response = USERS_COLLECTION.delete_one({"email": email})
         if db_response.deleted_count == 1:
             response = {"ok": True, "message": "record deleted"}
@@ -158,9 +164,77 @@ def list_videos(video_ids):
         ultrasounds = []
         for ultrasound_id in video['ultrasounds']:
             ultrasound = ULTRASOUND_COLLECTION.find_one({'_id': ultrasound_id})
-            del ultrasound['_id']
+            ultrasound['_id'] = str(ultrasound['_id'])
             del ultrasound['fingerprints']
             ultrasounds.append(ultrasound)
         result[video['name']] = ultrasounds
 
     return result
+
+@app.route("/delete-video", methods=["DELETE"])
+@jwt_required
+def delete_video(video_id=None):
+    if video_id is None:
+        form_data = request.form
+        try:
+            delete_vid_schema(form_data)
+        except exc.ValidationError:
+            return jsonify({"ok": False, "message": "Bad request parameters"}), 400
+        video_id = ObjectId(form_data['filename'])
+    try:
+        email = get_jwt_identity()["email"]
+        user_doc = USERS_COLLECTION.find_one({"email": email}, {"_id": 0})
+
+        video_doc = VIDEOS_COLLECTION.find_one({'_id': video_id})
+
+        if video_doc is not None:
+            # build internal store of ultrasounds in video
+            us_docs = []
+            us_ids = video_doc['ultrasounds']
+
+            if len(us_ids) > 0:
+                for us_id in us_ids:
+                    us_docs.append(ULTRASOUND_COLLECTION.find_one({"_id": us_id}))
+
+                # build internal store of fingeprints in each ultrasound
+                fp_docs = {}
+                for us_doc in us_docs:
+                    fp_ids = us_doc['fingerprints']
+                    for fp_id in fp_ids:
+                        if fp_id not in fp_docs:
+                            fp_docs[fp_id] = FINGERPRINTS_COLLECTION.find_one({'_id': fp_id})
+
+                # delete relevant couples from fingerprint
+                for fp_id, fp_doc in fp_docs.items():
+                    new_couples = [couple for couple in fp_doc['couple'] if couple['ultrasound_id'] not in us_ids]
+
+                    # if there are unrelated couples, overwrite the 'couple' field with new_couples
+                    if len(new_couples) > 0:
+                        FINGERPRINTS_COLLECTION.update_one({'_id': fp_id}, {'$set': {"couple": new_couples}})
+                    # else, delete the fingerprint
+                    else:
+                        FINGERPRINTS_COLLECTION.delete_one({'_id': fp_id})
+                
+                # delete all ultrasounds
+                requests = [DeleteOne({'_id': us_id}) for us_id in us_ids]
+                ULTRASOUND_COLLECTION.bulk_write(requests)
+
+            # delete video
+            VIDEOS_COLLECTION.delete_one({'_id': video_doc['_id']})
+
+            USERS_COLLECTION.update_one({'email': email}, {'$pull': {'videos': video_doc['_id']}})
+
+            return (
+                jsonify(
+                    {
+                        "ok": True,
+                        "message": 'Success!',
+                    }
+                ),
+                200,
+            )
+        else:
+            return jsonify({"ok": False, "message": "The file was not found"}), 404
+    except Exception as e:
+        print(e)
+        return jsonify({"ok": False, "message": "There was an error"}), 500

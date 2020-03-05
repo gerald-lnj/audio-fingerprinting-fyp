@@ -8,3 +8,9 @@ user_schema = Dict(
     },
     optional=["name"],
 )
+
+delete_vid_schema = Dict(
+    {
+        "filename": Str()
+    }
+)
