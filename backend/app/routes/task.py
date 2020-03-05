@@ -2,7 +2,7 @@
 routes for tasks
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 from flask import request, jsonify, send_from_directory
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -10,7 +10,7 @@ from bson.objectid import ObjectId
 from flask_uploads import UploadSet, configure_uploads, UploadNotAllowed
 from validx import exc
 from scipy.io import wavfile
-from app import app, mongo
+from app import app, mongo, scheduler
 from app.schemas import upload_schema
 from ..controllers import (
     audio_analysis,
@@ -140,7 +140,7 @@ def upload_file():
             fingerprints_ids.append(fingerprint_id.inserted_id)
         ULTRASOUND_COLLECTION.update_one(
             {'_id': ultrasound_id},
-            {   
+            {
                 "$push": {
                     "fingerprints": {"$each": fingerprints_ids}
                 }
@@ -177,9 +177,23 @@ def upload_file():
         os.remove(time_dicts[i]["filepath"])
     os.remove("{}/uploaded_files/{}".format(CWD, video_filename))
 
-    return jsonify({"ok": True, "message": "File successfully uploaded!"}), 200
+    run_time = datetime.now() + timedelta(hours=2)
+    scheduler.add_job(
+        id=video_id,
+        func=delete_video_delayed,
+        args=[output_video_filepath],
+        trigger='date',
+        run_date=run_time
+    )
 
     return jsonify({"ok": True, "message": video_filename}), 200
+
+def delete_video_delayed(filepath):
+    try:
+        os.remove(filepath)
+    except FileNotFoundError:
+        pass
+    print('file {} deleted!'.format(filepath.split('/')[-1]))
 
 @app.route("/get-video/<string:video_name>", methods=["GET"])
 def download(video_name):
