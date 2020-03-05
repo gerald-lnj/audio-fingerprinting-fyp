@@ -147,16 +147,6 @@ def upload_file():
             }
         )
 
-    VIDEOS_COLLECTION.update_one(
-        {'_id': video_id},
-        {
-            "$push":
-            {
-                "ultrasounds": {"$each": [i["_id"] for i in time_dicts]}
-            }
-        }
-    )
-
     USERS_COLLECTION.update_one(
         {'email': email},
         {
@@ -169,7 +159,18 @@ def upload_file():
 
     # 4: generate new video
     video_filepath = "{}/uploaded_files/{}".format(CWD, video_filename)
-    audio_overlay.main(video_filepath, time_dicts)
+    output_video_filepath = audio_overlay.main(video_filepath, time_dicts)
+    
+    VIDEOS_COLLECTION.update_one(
+        {'_id': video_id},
+        {
+            "$push":
+            {
+                "ultrasounds": {"$each": [i["_id"] for i in time_dicts]}
+            },
+            "$set": {"uploaded_video": video_filename}
+        }
+    )
 
     # 5: cleanup
     for i, _ in enumerate(time_dicts):
@@ -178,32 +179,17 @@ def upload_file():
 
     return jsonify({"ok": True, "message": "File successfully uploaded!"}), 200
 
+    return jsonify({"ok": True, "message": video_filename}), 200
 
 @app.route("/get-video/<string:video_name>", methods=["GET"])
-@jwt_required
 def download(video_name):
     """func to dynamically retrieve video files"""
-    user = get_jwt_identity()
-    if user["email"] in video_name:
-        try:
-            # # delete file after download
-            # @after_this_request
-            # def remove_file(response):
-            #     os.remove('{}/output_video/{}'.format(CWD, video_name))
-            #     return response
-            return send_from_directory(
-                "{}/output_video".format(CWD), filename=video_name, as_attachment=True
-            )
-        except FileNotFoundError:
-            return jsonify({"ok": False, "message": "The file was not found"}), 404
-    else:
-        return (
-            jsonify(
-                {"ok": False, "message": "You are not authorised to download this file"}
-            ),
-            404,
+    try:
+        return send_from_directory(
+            "{}/output_video".format(CWD), filename=video_name, as_attachment=True
         )
-
+    except FileNotFoundError:
+        return jsonify({"ok": False, "message": "The file was not found"}), 404
 
 @app.route("/detect", methods=["POST"])
 def detect():
