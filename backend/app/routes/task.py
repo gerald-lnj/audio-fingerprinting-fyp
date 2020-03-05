@@ -177,13 +177,15 @@ def upload_file():
         os.remove(time_dicts[i]["filepath"])
     os.remove("{}/uploaded_files/{}".format(CWD, video_filename))
 
+
     run_time = datetime.now() + timedelta(hours=2)
     scheduler.add_job(
-        id=video_id,
+        id=str(video_id),
         func=delete_video_delayed,
         args=[output_video_filepath],
         trigger='date',
-        run_date=run_time
+        run_date=run_time,
+        misfire_grace_time = 2592000
     )
 
     return jsonify({"ok": True, "message": video_filename}), 200
