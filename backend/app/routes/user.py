@@ -19,6 +19,10 @@ ROOT_PATH = os.environ.get("ROOT_PATH")
 # LOG = logger.get_root_logger(
 #     __name__, filename=os.path.join(ROOT_PATH, 'output.log'))
 
+USERS_COLLECTION = mongo.db.users
+VIDEOS_COLLECTION = mongo.db.videos  # holds reference to user
+ULTRASOUND_COLLECTION = mongo.db.ultrasound  # holds reference to video
+FINGERPRINTS_COLLECTION = mongo.db.fingerprints # holds reference to ultrasound (in couples)
 
 @jwt.unauthorized_loader
 def unauthorized_response(callback):
@@ -35,19 +39,18 @@ def auth_user():
     except exc.ValidationError as e:
         return jsonify({"ok": False, "message": "Bad request parameters"}), 400
     else:
-        user = mongo.db.users.find_one(
+        user_doc = USERS_COLLECTION.find_one(
             {"email": form_data["email"]},
             {"_id": 0},  # this line removes the _id key from the returned obj
         )
-        if user and flask_bcrypt.check_password_hash(
-            user["password"], form_data["password"]
+        if user_doc and flask_bcrypt.check_password_hash(user_doc["password"], form_data["password"]):
+            del user_doc["password"]
         ):
-            del user["password"]
             access_token = create_access_token(identity=form_data)
             refresh_token = create_refresh_token(identity=form_data)
-            user["token"] = access_token
-            user["refresh"] = refresh_token
-            return jsonify({"ok": True, "data": user}), 200
+            user_doc["token"] = access_token
+            user_doc["refresh"] = refresh_token
+            return jsonify({"ok": True, "data": user_doc}), 200
         else:
             return (
                 jsonify({"ok": False, "message": "invalid username or password"}),
@@ -76,10 +79,10 @@ def register():
         return jsonify({"ok": False, "message": "Bad request parameters: "}), 400
     else:
         try:
-            user = mongo.db.users.find_one({"email": form_data["email"]}, {"_id": 0})
+            user_doc = USERS_COLLECTION.find_one({"email": form_data["email"]}, {"_id": 0})
 
-            if user == None:
-                mongo.db.users.insert_one({
+            if user_doc is None:
+                USERS_COLLECTION.insert_one({
                     'name': form_data['name'],
                     'email': form_data['email'],
                     'password': flask_bcrypt.generate_password_hash(form_data["password"]).decode("utf-8"),
@@ -119,11 +122,11 @@ def user():
     email = get_jwt_identity()["email"]
 
     if request.method == "GET":
-        data = mongo.db.users.find_one({"email": email}, {"_id": 0})
+        data = USERS_COLLECTION.find_one({"email": email}, {"_id": 0})
         return jsonify({"ok": True, "data": data}), 200
 
     if request.method == "DELETE":
-        db_response = mongo.db.users.delete_one({"email": email})
+        db_response = USERS_COLLECTION.delete_one({"email": email})
         if db_response.deleted_count == 1:
             response = {"ok": True, "message": "record deleted"}
         else:
@@ -134,7 +137,7 @@ def user():
 
     if request.method == "PATCH":
         if data.get("query", {}) != {}:
-            mongo.db.users.update_one(data["query"], {"$set": data.get("payload", {})})
+            USERS_COLLECTION.update_one(data["query"], {"$set": data.get("payload", {})})
             return jsonify({"ok": True, "message": "record updated"}), 200
         else:
             return jsonify({"ok": False, "message": "Bad request parameters!"}), 400
