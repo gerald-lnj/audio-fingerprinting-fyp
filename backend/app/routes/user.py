@@ -45,7 +45,7 @@ def auth_user():
         )
         if user_doc and flask_bcrypt.check_password_hash(user_doc["password"], form_data["password"]):
             del user_doc["password"]
-        ):
+            del user_doc["videos"]
             access_token = create_access_token(identity=form_data)
             refresh_token = create_refresh_token(identity=form_data)
             user_doc["token"] = access_token
@@ -70,12 +70,13 @@ def register():
     more details in user_schema
     """
     form_data = request.form
+    print(form_data)
+
     try:
         # data = request.get_json(force=True)
         # user_schema(request.get_json(force=True))
         user_schema(form_data)
     except exc.ValidationError:
-
         return jsonify({"ok": False, "message": "Bad request parameters: "}), 400
     else:
         try:
@@ -126,7 +127,9 @@ def user():
 
     if request.method == "GET":
         data = USERS_COLLECTION.find_one({"email": email}, {"_id": 0})
-        return jsonify({"ok": True, "data": data}), 200
+        video_ids = data['videos']
+        result = list_videos(video_ids)
+        return jsonify({"ok": True, "data": result}), 200
 
     if request.method == "DELETE":
         db_response = USERS_COLLECTION.delete_one({"email": email})
@@ -143,3 +146,21 @@ def user():
             USERS_COLLECTION.update_one(data["query"], {"$set": data.get("payload", {})})
             return jsonify({"ok": True, "message": "record updated"}), 200
         return jsonify({"ok": False, "message": "Bad request parameters!"}), 400
+
+def purge_records(email):
+    data = USERS_COLLECTION.find_one({"email": email}, {"_id": 0})
+
+def list_videos(video_ids):
+    result = {}
+    for video_id in video_ids:
+ 
+        video = VIDEOS_COLLECTION.find_one({'_id': video_id})
+        ultrasounds = []
+        for ultrasound_id in video['ultrasounds']:
+            ultrasound = ULTRASOUND_COLLECTION.find_one({'_id': ultrasound_id})
+            del ultrasound['_id']
+            del ultrasound['fingerprints']
+            ultrasounds.append(ultrasound)
+        result[video['name']] = ultrasounds
+
+    return result
