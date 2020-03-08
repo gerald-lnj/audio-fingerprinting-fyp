@@ -1,10 +1,12 @@
 <template>
   <v-content>
     <v-row
+      v-if="!success"
       align="center"
       justify="center"
     >
       <v-col align="center">
+        <!-- Interactive Link Inserter -->
         <v-card
           v-show="videoDuration"
           class="mx-auto"
@@ -33,6 +35,7 @@
               :thumb-size="24"
             />
           </v-col>
+
           <v-col>
             <v-form v-model="tempValid">
               <v-text-field
@@ -63,7 +66,8 @@
             </v-btn>
           </v-col>
         </v-card>
-        
+
+        <!-- File Selector -->
         <v-col>
           <v-file-input
             v-model="files"
@@ -74,6 +78,8 @@
             @change="updateVideoDetails"
           />
         </v-col>
+
+        <!-- Manual Link Entry -->
         <v-col>
           <v-form v-model="valid">
             <v-container>
@@ -119,6 +125,8 @@
             <v-icon>mdi-plus</v-icon>
           </v-btn>
         </v-col>
+
+        <!-- Submit Button -->
         <v-col>        
           <v-btn
             bottom
@@ -130,6 +138,41 @@
         </v-col>
       </v-col>
     </v-row>
+
+    <!-- Success Dialog -->
+    <v-dialog
+      v-model="success"
+      width="500"
+    >
+      <v-card
+        v-if="success"
+        class="mx-auto"
+        raised
+      >
+        <v-card-title> Success! </v-card-title>
+        <v-card-text>
+          Here's your video. All videos are deleted from our server 2 hours are creation!
+          You can also find your previous download links on your Account page.
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            download
+            :href="link"
+          >
+            Download Video
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Message Snackbar -->
+    <v-snackbar
+      v-model="snackbar.flag"
+      :timeout="snackbar.timeout"
+    >
+      {{ snackbar.snackbarMsg }}
+    </v-snackbar>
   </v-content>
 </template>
 
@@ -162,6 +205,8 @@ export default {
         } else return "Not a valid URL!"
       }
     },
+    success: false,
+    link: null
   }),
   computed: {
     tempEndTime: function () {
@@ -224,8 +269,6 @@ export default {
 
       }
 
-      this.$store.commit('updateSnackbar', snackbar)
-
       return snackbar
     },
     submit: function() {
@@ -271,7 +314,6 @@ export default {
     submitRequest() {
       const server_url = process.env.VUE_APP_SERVER_URL
       const bodyFormData = new FormData();
-      const email = this.$store.state.email
       const jwt = this.$store.state.jwt
       const config = {
         headers: {Authorization: `Bearer ${jwt}`}
@@ -283,8 +325,6 @@ export default {
 
       bodyFormData.append('file', this.files)
 
-      bodyFormData.set('email', email)
-
       Axios
       .post(`${server_url}/upload`, bodyFormData, config)
       .then((resp) => {
@@ -292,27 +332,29 @@ export default {
           {
             start: null,
             end: null, 
-            link: null,
+            link: '',
           }
         ]
-        this.$store.commit('updateSnackbar', {
-          flag: true,
-          snackbarMsg: resp.data.message,
-          timeout: 3000
-        })
+        const filename = resp.data.message
+        this.link = `${server_url}/get-video/${filename}`
+        this.success = true
+
         this.files = null
         this.updateVideoDetails(null)
 
       })
-      .catch(() => {
-        // console.log(error)
-        this.$store.commit('updateSnackbar', {
-          flag: true,
-          snackbarMsg: 'Sorry, there was a problem!',
-          timeout: 3000
-        })
+      .catch((error) => {
+        if (!error.response) {
+
+          this.snackbar.snackbarMsg = 'Sorry, there was a network problem!'
+          this.snackbar.flag = true
+        }
+        else {
+          this.snackbar.snackbarMsg = 'Sorry, there was a server problem!'
+          this.snackbar.flag = true
+        }
       })
-    }
+    },
   },
 };
 </script>
