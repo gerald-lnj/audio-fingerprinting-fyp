@@ -100,3 +100,7 @@ backend/ouput_audio/
 backend/ouput_video/
 
 */.vscode/
+
+backend/output_audio/
+
+backend/output_video/
