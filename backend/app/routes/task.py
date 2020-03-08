@@ -195,12 +195,16 @@ def upload_file():
         args=[output_video_filepath],
         trigger='date',
         run_date=run_time,
-        misfire_grace_time = 2592000
+        misfire_grace_time=2592000
     )
 
     return jsonify({"ok": True, "message": video_filename}), 200
 
 def delete_video_delayed(filepath):
+    """
+    Function that removes the file at filepath. 
+    Called by apcheduler
+    """
     try:
         os.remove(filepath)
     except FileNotFoundError:
@@ -222,7 +226,6 @@ def detect():
     """function that calls the matching func"""
     # match_audio = request.files.get("file")
     # form_data = request.form
-    # TODO: wav file validation
 
     # read file from req
     if 'audio' not in request.files.keys():

@@ -85,10 +85,12 @@ export default {
       // bodyFormData.set('password', this.password)
 
       bodyFormData.set('email', 'test@test.com')
-      bodyFormData.set('password', '12345')
+      bodyFormData.set('password', '12345678')
 
       const server_url = process.env.VUE_APP_SERVER_URL
-      Axios.post(`${server_url}/auth`, bodyFormData)
+
+      Axios
+      .post(`${server_url}/auth`, bodyFormData)
       .then((resp)=> {
         this.$store.commit('updateDetails', resp)
         this.$store.commit('updateLoginStatus')
