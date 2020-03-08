@@ -16,7 +16,7 @@ from ..controllers import (
     audio_analysis,
     audio_hashing,
     audio_matching,
-    create_ultrasound,
+    create_audio,
     audio_overlay,
 )
 
@@ -49,6 +49,7 @@ def upload_file():
         return jsonify({"ok": False, "message": "Bad request parameters"}), 400
 
     email = get_jwt_identity()['email']
+    mode = form_data['mode']
     filename = request.files["file"].filename.split(".")[0]
 
     # save file
@@ -88,10 +89,13 @@ def upload_file():
         # use link as seed to generate 10s wav file,
         seed = "{}{}{}{}".format(_p["start"], _p["end"], _p["link"], video_id)
 
-        # generate ultrasound
-        ultrasound_filename = create_ultrasound.noise_generator(seed)
+        if mode == 'ultrasound':
+            # generate ultrasound
+            audio_filename = create_audio.ultrasound_generator(seed)
+        else:
+            audio_filename = create_audio.audio_extractor(video_filename, seed, _p['start'], _p['end'])
         time_dicts[i]["filepath"] = "{}/output_audio/{}.wav".format(
-            CWD, ultrasound_filename
+            CWD, audio_filename
         )
 
         # record link/ultrasound to db
@@ -113,9 +117,9 @@ def upload_file():
 
         # analyse ultrasound wav file and generate peaks and fingeprints
         _, data = wavfile.read(
-            "{}/output_audio/{}.wav".format(CWD, ultrasound_filename)
+            "{}/output_audio/{}.wav".format(CWD, audio_filename)
         )
-        peaks = audio_analysis.analyse(data)
+        peaks = audio_analysis.analyse(data, mode)
 
         fingerprints = audio_hashing.hasher(peaks, ultrasound_id)
 
