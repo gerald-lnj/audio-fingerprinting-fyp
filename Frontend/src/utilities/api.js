@@ -12,14 +12,17 @@ const refreshAuthLogic = failedRequest => {
   return Axios
   .post(`${process.env.VUE_APP_SERVER_URL}/refresh`, {}, config)
   .then(tokenRefreshResponse => {
-    store.state.jwt = tokenRefreshResponse.data.access_token
+    store.commit('updateJwt', tokenRefreshResponse.data.access_token)
     failedRequest.response.config.headers['Authorization'] = `Bearer ${tokenRefreshResponse.data.access_token}`;
     return Promise.resolve();
   })
   .catch(() => {
-    store.state.snackbar.snackbarMsg = 'Session expired!'
-    store.state.snackbar.flag = true
-    router.push('login')
+    store.commit('updateSnackbar', {
+      snackbarMsg: 'Please Login!',
+      flag: true,
+      timeout: 3000
+    })
+    if (router.currentRoute.path != '/login') router.push('login')
   })
 }
 

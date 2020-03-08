@@ -38,6 +38,9 @@ export default new Vuex.Store({
     },
     updateSnackbar(state, snackbar) {
       state.snackbar = snackbar
+    },
+    updateJwt(state, jwt) {
+      state.jwt = jwt
     }
 
   },
