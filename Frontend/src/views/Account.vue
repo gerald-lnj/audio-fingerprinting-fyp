@@ -50,6 +50,15 @@
               >
                 mdi-information
               </v-icon>
+              <v-btn
+                icon
+                class="mr-2"
+                :href="item.link"
+              >
+                <v-icon small>
+                  mdi-download
+                </v-icon>
+              </v-btn>
               <v-icon
                 small
                 color="error"
@@ -122,7 +131,7 @@
 </template>
 
 <script>
-import Axios from 'axios';
+import Axios from '../utilities/api';
 export default {
   name: "Account",
   props: {
@@ -159,6 +168,7 @@ export default {
       .then(resp => {
         this.video_records = resp.data.data.map(video => {
           video.epoch = this.objectIdToEpoch(video._id)
+          video.link = `${server_url}/get-video/${video.name}`
           video.ultrasounds.forEach(ultrasound => {
             ultrasound.start = this.SStoMM_SS(ultrasound.start)
             ultrasound.end = this.SStoMM_SS(ultrasound.end)
