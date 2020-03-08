@@ -73,7 +73,6 @@ def register():
     more details in user_schema
     """
     form_data = request.form
-    print(form_data)
 
     try:
         # data = request.get_json(force=True)
@@ -177,16 +176,18 @@ def list_videos(video_ids):
 
     return result
 
-@app.route("/delete-video", methods=["DELETE"])
+@app.route("/delete-video", methods=["POST"])
 @jwt_required
 def delete_video(video_id=None):
     if video_id is None:
         form_data = request.form
         try:
             delete_vid_schema(form_data)
-        except exc.ValidationError:
+        except exc.ValidationError as e:
+            print(e)
+
             return jsonify({"ok": False, "message": "Bad request parameters"}), 400
-        video_id = ObjectId(form_data['filename'])
+        video_id = ObjectId(form_data['video_id'])
     try:
         email = get_jwt_identity()["email"]
         user_doc = USERS_COLLECTION.find_one({"email": email}, {"_id": 0})

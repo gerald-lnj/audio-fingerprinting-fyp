@@ -11,6 +11,6 @@ user_schema = Dict(
 
 delete_vid_schema = Dict(
     {
-        "filename": Str()
+        "video_id": Str()
     }
 )
