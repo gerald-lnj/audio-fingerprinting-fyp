@@ -157,7 +157,7 @@ def purge_records(email):
     data = USERS_COLLECTION.find_one({"email": email}, {"_id": 0})
 
 def list_videos(video_ids):
-    result = {}
+    result = []
     for video_id in video_ids:
  
         video = VIDEOS_COLLECTION.find_one({'_id': video_id})
@@ -167,7 +167,13 @@ def list_videos(video_ids):
             ultrasound['_id'] = str(ultrasound['_id'])
             del ultrasound['fingerprints']
             ultrasounds.append(ultrasound)
-        result[video['name']] = ultrasounds
+        # result[video['name']] = ultrasounds
+        temp_result = {
+            '_id': video_id,
+            'name': video['name'],
+            'ultrasounds': ultrasounds
+        }
+        result.append(temp_result)
 
     return result
 
