@@ -134,10 +134,20 @@ def upload_file():
                 ultrasound_fingerprints[address].append(couple)
         fingerprints_ids = []
         for address, couple_list in ultrasound_fingerprints.items():
-            fingerprint_id = FINGERPRINTS_COLLECTION.insert_one(
-                {'address': address, 'couple': couple_list}
-            )
-            fingerprints_ids.append(fingerprint_id.inserted_id)
+            fingerprint_id = FINGERPRINTS_COLLECTION.find_one({'address': address})
+            if fingerprint_id:
+                _id = FINGERPRINTS_COLLECTION.update_one(
+                    {'address': address}, {
+                        "$push": {
+                            "couple": {"$each": couple_list}
+                        }
+                    }
+                ).upserted_id
+            else:
+                _id = FINGERPRINTS_COLLECTION.insert_one(
+                    {'address': address, "couple": couple_list}
+                ).inserted_id
+            fingerprints_ids.append(_id)
         ULTRASOUND_COLLECTION.update_one(
             {'_id': ultrasound_id},
             {
