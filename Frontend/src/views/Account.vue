@@ -2,8 +2,8 @@
   <v-container>
     <v-row>
       <v-col align="center">
+        <!-- Account Details Card -->
         <v-col>
-          <!-- Account Details Card -->
           <v-card
             class="mx-auto"
             tile
@@ -25,6 +25,7 @@
             </v-list>
           </v-card>
         </v-col>
+        <!-- Video Records Table -->
         <v-col v-if="video_records.length>0">
           <v-data-table
             :headers="headers"
@@ -62,13 +63,14 @@
               <v-icon
                 small
                 color="error"
-                @click="deleteVideo(item._id)"
+                @click="dialog_video = item; delete_dialog = true"
               >
                 mdi-delete
               </v-icon>
             </template>
           </v-data-table>
         </v-col>
+        <!-- Logout Button -->
         <v-col>
           <v-btn
             @click="logout"
@@ -76,57 +78,108 @@
             Logout
           </v-btn>
         </v-col>
-        <v-col>
-          <v-btn
-            color="error"
-            @click="deleteAccount"
-          >
-            Delete Account
-          </v-btn>
-        </v-col>
+        <!-- Delete Account Dialog -->
+        <v-dialog
+          v-model="delete_account_dialog"
+          width="500"
+        >
+          <template v-slot:activator="{ on }">
+            <v-btn
+              color="error"
+              v-on="on"
+            >
+              Delete Account
+            </v-btn>
+          </template>
+
+          <v-card>
+            <v-card-title> Delete Account ? </v-card-title>
+            <v-card-text>
+              If you delete your account, all records of videos created by you will be deleted, and you will not be able to run detection on any of them to retrieve metadata!
+            </v-card-text>
+
+            <v-divider />
+
+            <v-card-actions>
+              <v-spacer />
+              <v-btn
+                color="error"
+                text
+                @click="deleteAccount()"
+              >
+                Delete Account
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-col>
     </v-row>
-    <v-overlay
-      v-if="overlay"
-      :value="overlay"
+    <!-- Video Info Dialog -->
+    <v-dialog
+      v-model="info_dialog"
+      width="500"
     >
-      <v-col align="center">
-        <v-card
-          class="mx-auto"
-          raised
-        >
-          <v-card-title> Video Details </v-card-title>
-          <v-list disabled>
-            <v-list-item-group color="primary">
-              <v-list-item>
-                <v-list-item-content>
-                  <v-list-item-title> {{ overlay_video.name }}</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item
-                v-for="ultrasound in overlay_video.ultrasounds"
-                :key="ultrasound._id"
-                two-line
-                ripple
-              >
-                <v-list-item-content>
-                  <v-list-item-title> {{ ultrasound.content }}</v-list-item-title>
-                  <v-list-item-subtitle>
-                    {{ `${ultrasound.start} to ${ultrasound.end}` }}
-                  </v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list-item-group>
-          </v-list>
+      <v-card
+        v-if="info_dialog"
+        class="mx-auto"
+        raised
+      >
+        <v-card-title> {{ dialog_video.name }} </v-card-title>
+        <v-list disabled>
+          <v-list-item-group color="primary">
+            <v-list-item
+              v-for="ultrasound in dialog_video.ultrasounds"
+              :key="ultrasound._id"
+              two-line
+              ripple
+            >
+              <v-list-item-content>
+                <v-list-item-title> {{ ultrasound.content }}</v-list-item-title>
+                <v-list-item-subtitle>
+                  {{ `${ultrasound.start} to ${ultrasound.end}` }}
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list-item-group>
+        </v-list>
+        <v-card-actions>
+          <v-spacer />
           <v-btn
             icon
-            @click="overlay = false"
+            @click="info_dialog = false"
           >
             <v-icon>mdi-close</v-icon>
           </v-btn>
-        </v-card>
-      </v-col>
-    </v-overlay>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Delete Video Dialog -->
+    <v-dialog
+      v-model="delete_dialog"
+      width="500"
+    >
+      <v-card
+        v-if="delete_dialog"
+        class="mx-auto"
+        raised
+      >
+        <v-card-title> Delete {{ dialog_video.name }} ? </v-card-title>
+        <v-card-text>
+          Deleting only removes fingerprints from our database. You can stil play your videos, but you won't be able to retieve metadata though our detection!
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            text
+            color="error"
+            @click="deleteVideo(dialog_video._id); delete_dialog=false"
+          >
+            Delete
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -143,10 +196,12 @@ export default {
       {text: 'Date', align: 'start',value: 'epoch'},
       {text: 'Title', value: 'name'},
       {text: 'Links', value: 'links'},
-      { text: 'Actions', value: 'action', sortable: false },
+      {text: 'Actions', value: 'action', sortable: false},
     ],
-    overlay: false,
-    overlay_video: null
+    dialog_video: null,
+    info_dialog: false,
+    delete_dialog: false,
+    delete_account_dialog: false
   }),
   mounted() {
     this.getAccountRecords()
@@ -205,17 +260,15 @@ export default {
       Axios
       .post(`${server_url}/delete-video`, bodyFormData, config)
       .then(() => {
-        this.video_records = this.video_records.filter((video)=> {
-          video._id !== _id
-        })
+        this.getAccountRecords()
       })
       .catch(error => {
         console.error(error)
       })
     },
     showVideoDetails(video) {
-      this.overlay_video = video
-      this.overlay = true
+      this.dialog_video = video
+      this.info_dialog = true
     },
     SStoMM_SS(seconds) {
       let date = new Date(null);
