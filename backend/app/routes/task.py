@@ -242,7 +242,6 @@ def detect():
         )
     else:
         ultrasound_id = ULTRASOUND_COLLECTION.find_one({"_id": object_id})
-        video_id = VIDEOS_COLLECTION.find_one({"_id": ultrasound_id["video_id"]})
         print('\nObjectID: {}'.format(object_id))
         print('Contents: {}'.format(ultrasound_id["content"]))
         print('Match_max: {}'.format(match_max))
