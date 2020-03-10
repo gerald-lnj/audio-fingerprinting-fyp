@@ -41,7 +41,7 @@
               <span>{{ new Date(item.epoch * 1000).toLocaleString() }}</span>
             </template>
             <template v-slot:item.links="{ item }">
-              <span>{{ item.ultrasounds.length }}</span>
+              <span>{{ item.links.length }}</span>
             </template>
             <template v-slot:item.action="{ item }">
               <v-icon
@@ -128,17 +128,20 @@
         <v-list disabled>
           <v-list-item-group color="primary">
             <v-list-item
-              v-for="ultrasound in dialog_video.ultrasounds"
-              :key="ultrasound._id"
+              v-for="link in dialog_video.links"
+              :key="link._id"
               two-line
               ripple
             >
               <v-list-item-content>
-                <v-list-item-title> {{ ultrasound.content }}</v-list-item-title>
+                <v-list-item-title> {{ link.content }}</v-list-item-title>
                 <v-list-item-subtitle>
-                  {{ `${ultrasound.start} to ${ultrasound.end}` }}
+                  {{ `${link.start} to ${link.end}` }}
                 </v-list-item-subtitle>
-              </v-list-item-content>
+                <v-list-item-subtitle>
+                  {{ `Mode: ${link.mode == 'audible'? 'Fingerprinting':'Watermarking'}` }}
+                </v-list-item-subtitle>
+              </v-list-item-content><br>
             </v-list-item>
           </v-list-item-group>
         </v-list>
@@ -224,9 +227,10 @@ export default {
         this.video_records = resp.data.data.map(video => {
           video.epoch = this.objectIdToEpoch(video._id)
           video.link = `${server_url}/get-video/${video.name}`
-          video.ultrasounds.forEach(ultrasound => {
-            ultrasound.start = this.SStoMM_SS(ultrasound.start)
-            ultrasound.end = this.SStoMM_SS(ultrasound.end)
+          video.mode = video.mode == 'ultrasound' ? 'Watermarking' : 'Fingerprinting'
+          video.links.forEach(link => {
+            link.start = this.SStoMM_SS(link.start)
+            link.end = this.SStoMM_SS(link.end)
           })
           return video
         })

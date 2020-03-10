@@ -25,12 +25,12 @@ VIDEOS = UploadSet(name="videos", extensions=("mp4"))
 configure_uploads(app, VIDEOS)
 CWD = os.getcwd()
 
-USERS_COLLECTION = mongo.db.users
-VIDEOS_COLLECTION = mongo.db.videos  # holds reference to user
-ULTRASOUND_COLLECTION = mongo.db.ultrasound  # holds reference to video
+USERS_COLLECTION = mongo.db.users # holds reference to videos
+VIDEOS_COLLECTION = mongo.db.videos  # holds reference to links
+LINKS_COLLECTION = mongo.db.links  # holds reference to fingerprints
 FINGERPRINTS_COLLECTION = (
     mongo.db.fingerprints
-)  # holds reference to ultrasound (in couples)
+)  # holds reference to links (in couples)
 
 
 @app.route("/upload", methods=["POST"])
@@ -69,7 +69,8 @@ def upload_file():
     video_document = {
         "name": video_filename,
         "uploader_email": email,
-        "ultrasounds": []
+        "links": [],
+        "mode": mode
     }
     video_id = VIDEOS_COLLECTION.insert_one(video_document).inserted_id
 
@@ -98,46 +99,46 @@ def upload_file():
             CWD, audio_filename
         )
 
-        # record link/ultrasound to db
-        ultrasound_document = {
+        # record link to db
+        link_document = {
             "type": "link",
             "content": _p["link"],
             "start": _p["start"],
             "end": _p["end"],
             "fingerprints": []
         }
-        ultrasound_id = ULTRASOUND_COLLECTION.insert_one(
-            ultrasound_document
+        link_id = LINKS_COLLECTION.insert_one(
+            link_document
         ).inserted_id
 
-        # add the link/ultrasound ObjectID to time_dicts for saving to video collection
-        time_dicts[i]["_id"] = ultrasound_id
+        # add the link ObjectID to time_dicts for saving to video collection
+        time_dicts[i]["_id"] = link_id
 
-        ultrasound_fingerprints = {}
+        link_audio_fingerprints = {}
 
-        # analyse ultrasound wav file and generate peaks and fingeprints
+        # analyse audio wav file and generate peaks and fingeprints
         _, data = wavfile.read(
             "{}/output_audio/{}.wav".format(CWD, audio_filename)
         )
         peaks = audio_analysis.analyse(data, mode)
 
-        fingerprints = audio_hashing.hasher(peaks, ultrasound_id)
+        fingerprints = audio_hashing.hasher(peaks, link_id)
 
         # collate address and couples
         for fingerprint in fingerprints:
             address = fingerprint["address"]
             couple = fingerprint["couple"]
 
-            if address not in ultrasound_fingerprints:
+            if address not in link_audio_fingerprints:
                 # if fingerprint address is not in collection, insert new document
-                ultrasound_fingerprints[address] = [couple]
+                link_audio_fingerprints[address] = [couple]
 
             else:
                 # if fingerprint address already exists, append couple
                 # TODO: is there a way to check if couple list already includes couple?
-                ultrasound_fingerprints[address].append(couple)
+                link_audio_fingerprints[address].append(couple)
         fingerprints_ids = []
-        for address, couple_list in ultrasound_fingerprints.items():
+        for address, couple_list in link_audio_fingerprints.items():
             fingerprint_id = FINGERPRINTS_COLLECTION.find_one({'address': address})
             if fingerprint_id:
                 _id = FINGERPRINTS_COLLECTION.update_one(
@@ -152,8 +153,8 @@ def upload_file():
                     {'address': address, "couple": couple_list}
                 ).inserted_id
             fingerprints_ids.append(_id)
-        ULTRASOUND_COLLECTION.update_one(
-            {'_id': ultrasound_id},
+        LINKS_COLLECTION.update_one(
+            {'_id': link_id},
             {
                 "$push": {
                     "fingerprints": {"$each": fingerprints_ids}
@@ -180,7 +181,7 @@ def upload_file():
         {
             "$push":
             {
-                "ultrasounds": {"$each": [i["_id"] for i in time_dicts]}
+                "links": {"$each": [i["_id"] for i in time_dicts]}
             },
             "$set": {"uploaded_video": video_filename}
         }
@@ -258,15 +259,15 @@ def detect():
             204,
         )
     else:
-        ultrasound_id = ULTRASOUND_COLLECTION.find_one({"_id": object_id})
+        link_audio_id = LINKS_COLLECTION.find_one({"_id": object_id})
         print('\nObjectID: {}'.format(object_id))
-        print('Contents: {}'.format(ultrasound_id["content"]))
+        print('Contents: {}'.format(link_audio_id["content"]))
         print('Match_max: {}'.format(match_max))
         return (
             jsonify(
                 {
                     "ok": True,
-                    "message": ultrasound_id["content"],
+                    "message": link_audio_id["content"],
                 }
             ),
             200,
@@ -295,7 +296,7 @@ def purge():
     clears records of videos from users
     """
     VIDEOS_COLLECTION.remove({})
-    ULTRASOUND_COLLECTION.remove({})
+    LINKS_COLLECTION.remove({})
     FINGERPRINTS_COLLECTION.remove({})
     USERS_COLLECTION.update({}, {"$set": {"videos": []}}, multi=True)
     return "purged records"
