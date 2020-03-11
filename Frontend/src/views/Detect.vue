@@ -111,12 +111,6 @@ export default {
       return currentSize < max ? currentSize : max
     }
   },
-  mounted() {
-    const mediaConstraints = { audio: true };
-    navigator.mediaDevices
-    .getUserMedia(mediaConstraints)
-    .then(this.successCallback.bind(this), this.errorCallback.bind(this));
-  },
   methods: {
     recordRTCOptns() {
       const options = {
@@ -125,10 +119,10 @@ export default {
         recorderType: RecordRTC.StereoAudioRecorder,
         numberOfAudioChannels: 1,
         desiredSampRate: 44100,
-        timeSlice: 5000,
+        timeSlice: 10000,
         ondataavailable: (blob) => {
           this.postBlob(blob)
-          this.recordRTC.reset
+          this.stopRecording()
           this.startRecording()
         }
        };
@@ -184,21 +178,30 @@ export default {
       }
     },
     successCallback(stream) {
+      const options = this.recordRTCOptns()
       this.stream = stream;
+      this.recordRTC = RecordRTC(stream, options);
+      this.recordRTC.startRecording();
     },
     errorCallback() {
       //handle error here
     },
 
     startRecording() {
-      this.recordRTC = RecordRTC(this.stream, this.recordRTCOptns());
-      this.recordRTC.startRecording();
+      if (this.recordRTC == null) {
+        const mediaConstraints = { audio: true };
+        navigator.mediaDevices
+        .getUserMedia(mediaConstraints)
+        .then(this.successCallback.bind(this), this.errorCallback.bind(this));
+      } else {
+        const recordRTC = this.recordRTC;
+        recordRTC.startRecording()
+      }
+      
     },
     stopRecording() {
       const recordRTC = this.recordRTC;
-      recordRTC.stopRecording();
-      const stream = this.stream;
-      stream.getAudioTracks().forEach(track => track.stop());
+      recordRTC.reset()
     },
     download() {
       this.recordRTC.save('audio.wav');
