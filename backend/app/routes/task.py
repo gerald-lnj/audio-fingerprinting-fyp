@@ -28,9 +28,10 @@ CWD = os.getcwd()
 USERS_COLLECTION = mongo.db.users # holds reference to videos
 VIDEOS_COLLECTION = mongo.db.videos  # holds reference to links
 LINKS_COLLECTION = mongo.db.links  # holds reference to fingerprints
-FINGERPRINTS_COLLECTION = (
-    mongo.db.fingerprints
-)  # holds reference to links (in couples)
+
+# holds reference to links
+US_FINGERPRINTS_COLLECTION = mongo.db.ultrasound_fingerprints
+AU_FINGERPRINTS_COLLECTION = mongo.db.audible_fingerprints
 
 
 @app.route("/upload", methods=["POST"])
@@ -50,6 +51,12 @@ def upload_file():
 
     email = get_jwt_identity()['email']
     mode = form_data['mode']
+
+    if mode == 'ultrasound':
+        FINGERPRINTS_COLLECTION = US_FINGERPRINTS_COLLECTION
+    else:
+        FINGERPRINTS_COLLECTION = AU_FINGERPRINTS_COLLECTION
+
     filename = request.files["file"].filename.split(".")[0]
 
     # save file
@@ -258,7 +265,7 @@ def detect():
     fingerprints = audio_hashing.hasher(peaks)
 
     # match on fingerprints
-    object_id, match_max = audio_matching.match(fingerprints)
+    object_id, match_max = audio_matching.match(fingerprints, mode)
 
     if object_id is None:
         print('Nothing detected')
@@ -305,6 +312,7 @@ def purge():
     """
     VIDEOS_COLLECTION.remove({})
     LINKS_COLLECTION.remove({})
-    FINGERPRINTS_COLLECTION.remove({})
+    US_FINGERPRINTS_COLLECTION.remove({})
+    AU_FINGERPRINTS_COLLECTION.remove({})
     USERS_COLLECTION.update({}, {"$set": {"videos": []}}, multi=True)
     return "purged records"
