@@ -130,9 +130,9 @@ def hann_window(recorded_data):
 
     return new_recorded_data
 
-def extract_wav(video_filename):
+def video_to_wav(video_filename):
     video_filepath = "{}/uploaded_files/{}".format(CWD, video_filename)
-    output_filepath = "{}/output_audio/{}.wav".format(CWD, video_filename)
+    output_filepath = "{}/uploaded_files/{}.wav".format(CWD, video_filename)
     ffmpeg_builder = ["ffmpeg", "-hide_banner", "-loglevel", "error"]
     ffmpeg_builder.extend(["-i", video_filepath])
     ffmpeg_builder.extend(['-ab', '160k', '-ac', '2', '-ar', '44100', '-vn', output_filepath])
@@ -140,5 +140,6 @@ def extract_wav(video_filename):
         subprocess.run(ffmpeg_builder, check=True)
     except subprocess.CalledProcessError:
         return None
+    print(output_filepath)
   
     return output_filepath

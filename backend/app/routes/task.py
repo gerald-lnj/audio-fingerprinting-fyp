@@ -84,6 +84,7 @@ def upload_file():
         for time_entry in form_data.getlist("time")
     ]
     time_dicts = sorted(time_dicts, key=lambda k: k["start"])
+    extracted_audio_filepath = audio_analysis.video_to_wav(video_filename)
 
     # for each link
     for i, _p in enumerate(time_dicts):
@@ -94,7 +95,7 @@ def upload_file():
             # generate ultrasound
             audio_filename = create_audio.ultrasound_generator(seed)
         else:
-            audio_filename = create_audio.audio_extractor(video_filename, seed, _p['start'], _p['end'])
+            audio_filename = create_audio.audio_extractor(extracted_audio_filepath, seed, _p['start'], _p['end'])
         time_dicts[i]["filepath"] = "{}/output_audio/{}.wav".format(
             CWD, audio_filename
         )
@@ -174,7 +175,9 @@ def upload_file():
 
     # 4: generate new video
     video_filepath = "{}/uploaded_files/{}".format(CWD, video_filename)
-    output_video_filepath = audio_overlay.main(video_filepath, time_dicts)
+
+    if mode == 'ultrasound':
+        output_video_filepath = audio_overlay.main(video_filepath, time_dicts)
     
     VIDEOS_COLLECTION.update_one(
         {'_id': video_id},
@@ -191,19 +194,23 @@ def upload_file():
     for i, _ in enumerate(time_dicts):
         os.remove(time_dicts[i]["filepath"])
     os.remove("{}/uploaded_files/{}".format(CWD, video_filename))
+    os.remove("{}/uploaded_files/{}.wav".format(CWD, video_filename))
 
+    if mode == 'ultrasound':
+        run_time = datetime.now() + timedelta(hours=2)
+        scheduler.add_job(
+            id=str(video_id),
+            func=delete_video_delayed,
+            args=[output_video_filepath],
+            trigger='date',
+            run_date=run_time,
+            misfire_grace_time=2592000
+        )
 
-    run_time = datetime.now() + timedelta(hours=2)
-    scheduler.add_job(
-        id=str(video_id),
-        func=delete_video_delayed,
-        args=[output_video_filepath],
-        trigger='date',
-        run_date=run_time,
-        misfire_grace_time=2592000
-    )
-
-    return jsonify({"ok": True, "message": video_filename}), 200
+    return_dict = {"ok": True}
+    if mode == 'ultrasound':
+        return_dict['message'] = video_filename
+    return jsonify(return_dict), 200
 
 def delete_video_delayed(filepath):
     """
@@ -230,7 +237,8 @@ def download(video_name):
 def detect():
     """function that calls the matching func"""
     # match_audio = request.files.get("file")
-    # form_data = request.form
+    form_data = request.form
+    mode = form_data['mode']
 
     # read file from req
     if 'audio' not in request.files.keys():
@@ -245,7 +253,7 @@ def detect():
     _, data = wavfile.read(audio_file)
 
     # get peaks
-    peaks = audio_analysis.analyse(data)
+    peaks = audio_analysis.analyse(data, mode)
     # generate fingerprints
     fingerprints = audio_hashing.hasher(peaks)
 

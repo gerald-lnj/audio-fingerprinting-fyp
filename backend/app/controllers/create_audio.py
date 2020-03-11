@@ -43,13 +43,12 @@ def ultrasound_generator(seed):
 
     return ultrasound_filename
 
-def audio_extractor(video_filename, seed, start, end):
-    input_audio_filepath = "{}/output_audio/{}.wav".format(CWD, video_filename)
-
+def audio_extractor(extracted_audio_filepath, seed, start, end):
+    print(extracted_audio_filepath)
     audio_filename = base64.urlsafe_b64encode(seed.encode("utf-8")).decode("utf-8")
     output_filepath = "{}/output_audio/{}.wav".format(CWD, audio_filename)
 
-    new_audio = AudioSegment.from_wav(input_audio_filepath)
+    new_audio = AudioSegment.from_wav(extracted_audio_filepath)
     new_audio = new_audio[start*1000 : end*1000]
     new_audio.export(output_filepath, format="wav")
 

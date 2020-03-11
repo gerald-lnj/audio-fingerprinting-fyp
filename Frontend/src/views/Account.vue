@@ -198,6 +198,7 @@ export default {
     headers: [
       {text: 'Date', align: 'start',value: 'epoch'},
       {text: 'Title', value: 'name'},
+      {text: 'Mode', value: 'mode'},
       {text: 'Links', value: 'links'},
       {text: 'Actions', value: 'action', sortable: false},
     ],
@@ -226,7 +227,8 @@ export default {
       .then(resp => {
         this.video_records = resp.data.data.map(video => {
           video.epoch = this.objectIdToEpoch(video._id)
-          video.link = `${server_url}/get-video/${video.name}`
+          if (video.mode == 'ultrasound')
+            video.link = `${server_url}/get-video/${video.name}`
           video.mode = video.mode == 'ultrasound' ? 'Watermarking' : 'Fingerprinting'
           video.links.forEach(link => {
             link.start = this.SStoMM_SS(link.start)

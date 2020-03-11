@@ -173,6 +173,7 @@ def list_videos(video_ids):
             '_id': video_id,
             'name': video['name'],
             'links': links,
+            'mode': video['mode']
         }
         result.append(temp_result)
     return result
