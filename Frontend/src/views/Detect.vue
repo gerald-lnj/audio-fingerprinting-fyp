@@ -79,6 +79,12 @@ export default {
       return currentSize < max ? currentSize : max
     }
   },
+  mounted() {
+    const mediaConstraints = { audio: true };
+    navigator.mediaDevices
+    .getUserMedia(mediaConstraints)
+    .then(this.successCallback.bind(this), this.errorCallback.bind(this));
+  },
   methods: {
     recordRTCOptns() {
       const options = {
@@ -90,7 +96,7 @@ export default {
         timeSlice: 5000,
         ondataavailable: (blob) => {
           this.postBlob(blob)
-          this.stopRecording()
+          this.recordRTC.reset
           this.startRecording()
         }
        };
@@ -145,20 +151,15 @@ export default {
       }
     },
     successCallback(stream) {
-      const options = this.recordRTCOptns()
       this.stream = stream;
-      this.recordRTC = RecordRTC(stream, options);
-      this.recordRTC.startRecording();
     },
     errorCallback() {
       //handle error here
     },
 
     startRecording() {
-      const mediaConstraints = { audio: true };
-      navigator.mediaDevices
-      .getUserMedia(mediaConstraints)
-      .then(this.successCallback.bind(this), this.errorCallback.bind(this));
+      this.recordRTC = RecordRTC(this.stream, this.recordRTCOptns());
+      this.recordRTC.startRecording();
     },
     stopRecording() {
       const recordRTC = this.recordRTC;
