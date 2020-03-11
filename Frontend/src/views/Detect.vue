@@ -45,10 +45,15 @@
             no-data-text="Tap the microphone to start detection!"
             class="elevation-1"
           >
-            <template v-slot:top v-if="true">
-              <v-toolbar flat short>
+            <template
+              v-slot:top
+            >
+              <v-toolbar
+                flat
+                short
+              >
                 <v-toolbar-title>Detected Links</v-toolbar-title>
-                <v-spacer></v-spacer>
+                <v-spacer />
 
                 <v-btn @click="detectedHistory = []">
                   Clear Links
