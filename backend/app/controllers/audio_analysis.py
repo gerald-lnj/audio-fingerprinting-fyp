@@ -1,22 +1,26 @@
 import cmath
+import os
+import subprocess
 import math
 import numpy as np
+
+CWD = os.getcwd()
 
 CHUNK_SIZE = 1024
 
 # # Range : {~300 (unused), 300-440, 440-880, 880-1760, 1760-3400, 3400~}
 # # for audible frequency range
-# RANGE = [7, 10, 20, 40, 80, 512]
+AUDIBLE_RANGE = [7, 10, 20, 40, 80, 512]
 
 # Range : {20k, 20.1k, 20.2k, 20.3k})
 # for ultrasound frequency range
-RANGE = [463, 465, 467, 469, 512]
+ULTRASOUND_RANGE = [463, 465, 467, 469, 512]
 
 FILTER_WINDOW_SIZE = 40
 
 ULTRASOUND_ABS_MIN_AMP = 8
 
-def analyse(audio):
+def analyse(audio, mode):
     """
     returns 2d int array of peaks
     """
@@ -30,7 +34,7 @@ def analyse(audio):
     # returns 2d array of complex numbers
     spectrum = fft(audio)
     # returns 2d array of peaks
-    peak = find_peak(spectrum)
+    peak = find_peak(spectrum, mode)
     return peak
 
 
@@ -60,20 +64,24 @@ def fft(audio):
     return spectrum
 
 
-def find_peak(spectrum):
+def find_peak(spectrum, mode):
     """
     takes in 2d array spectrum, and returns peaks
     # peak = [..., anchor, ...]
     # anchor = [time,  freq, amp]
     """
-    peak = [[0 for i in range(len(RANGE))] for j in range(len(spectrum))]
-    highscores = [[0 for i in range(len(RANGE))] for j in range(len(spectrum))]
+    if mode == 'ultrasound':
+        freq_range = ULTRASOUND_RANGE
+    else:
+        freq_range = AUDIBLE_RANGE
+    peak = [[0 for i in range(len(freq_range))] for j in range(len(spectrum))]
+    highscores = [[0 for i in range(len(freq_range))] for j in range(len(spectrum))]
     band = 0
     for i, _ in enumerate(spectrum):
         for freq in range(1, CHUNK_SIZE // 2):
-            if freq >= RANGE[0]:
+            if freq >= freq_range[0]:
                 mag = abs(spectrum[i][freq])
-                if freq > RANGE[band]:
+                if freq > freq_range[band]:
                     band += 1
                 if mag > highscores[i][band]:
                     highscores[i][band] = mag
@@ -121,3 +129,17 @@ def hann_window(recorded_data):
     new_recorded_data = np.multiply(recorded_data, hann)
 
     return new_recorded_data
+
+def video_to_wav(video_filename):
+    video_filepath = "{}/uploaded_files/{}".format(CWD, video_filename)
+    output_filepath = "{}/uploaded_files/{}.wav".format(CWD, video_filename)
+    ffmpeg_builder = ["ffmpeg", "-hide_banner", "-loglevel", "error"]
+    ffmpeg_builder.extend(["-i", video_filepath])
+    ffmpeg_builder.extend(['-ab', '160k', '-ac', '2', '-ar', '44100', '-vn', output_filepath])
+    try:
+        subprocess.run(ffmpeg_builder, check=True)
+    except subprocess.CalledProcessError:
+        return None
+    print(output_filepath)
+  
+    return output_filepath

@@ -10,11 +10,28 @@
             fab
             text 
             icon
+            :disabled="!mode"
             @click="toggleRecording"
           >
             <v-icon>{{ recordingIcon }}</v-icon>
           </v-btn>
         </v-col>
+        <div class="flex-center">
+          <v-radio-group
+            v-model="mode"
+            row
+            :mandatory="false"
+          >
+            <v-radio
+              label="Watermarking"
+              value="ultrasound"
+            />
+            <v-radio
+              label="Fingerprinting"
+              value="audible"
+            />
+          </v-radio-group>
+        </div>
         <p v-if="recording">
           {{ detected }}
         </p>
@@ -77,7 +94,8 @@ export default {
         {text: 'Actions', value: 'action', sortable: false},
       ],
       detectedHistory: [],
-      updated: false
+      updated: false,
+      mode: null
     }
   },
   computed: {
@@ -124,6 +142,7 @@ export default {
       const server_url = process.env.VUE_APP_SERVER_URL
       const bodyFormData = new FormData();
       bodyFormData.append('audio', blob)
+      bodyFormData.append('mode', this.mode)
       Axios
       .post(`${server_url}/detect`, bodyFormData)
       .then((msg)=>{
@@ -204,5 +223,10 @@ export default {
 .mic
 {
   animation: shadow-pulse 1s infinite;
+}
+.flex-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>

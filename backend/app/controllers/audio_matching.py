@@ -7,14 +7,15 @@ from app import app, mongo
 USERS_COLLECTION = mongo.db.users
 VIDEOS_COLLECTION = mongo.db.videos  # holds reference to user
 ULTRASOUND_COLLECTION = mongo.db.ultrasound  # holds reference to video
-FINGERPRINTS_COLLECTION = (
-    mongo.db.fingerprints
-)  # holds reference to ultrasound (in couples)
+
+# holds reference to links
+US_FINGERPRINTS_COLLECTION = mongo.db.ultrasound_fingerprints
+AU_FINGERPRINTS_COLLECTION = mongo.db.audible_fingerprints
 
 
-def match(fingerprints):
+def match(fingerprints, mode):
     """
-    takes in array of fingerprints,
+    takes in array of fingerprints and mode
     returns (string ultrasound_id, int max_delta_count
     """
     target_zone_map = {}  # { (string ultrasound_id, int absolute_time): [int delta] }
@@ -22,6 +23,11 @@ def match(fingerprints):
     time_coherency_map = {}  # { string ultrasound_id: { int delta: int count } }
 
     match_dict = {}
+
+    if mode == 'ultrasound':
+        FINGERPRINTS_COLLECTION = US_FINGERPRINTS_COLLECTION
+    else:
+        FINGERPRINTS_COLLECTION = AU_FINGERPRINTS_COLLECTION
 
     for fingerprint in fingerprints:
         # print('looking for address: {}'.format(fingerprint['address']))

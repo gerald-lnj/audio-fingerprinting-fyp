@@ -125,6 +125,22 @@
             <v-icon>mdi-plus</v-icon>
           </v-btn>
         </v-col>
+        <div class="flex-center">
+          <v-radio-group
+            v-model="mode"
+            row
+            :mandatory="false"
+          >
+            <v-radio
+              label="Watermarking"
+              value="ultrasound"
+            />
+            <v-radio
+              label="Fingerprinting"
+              value="audible"
+            />
+          </v-radio-group>
+        </div>
 
         <!-- Submit Button -->
         <v-col>        
@@ -188,6 +204,7 @@ export default {
     videoDuration: null,
     files: null,
     valid: false,
+    mode: null,
     linkFormData: [
       {
         start: null,
@@ -272,7 +289,7 @@ export default {
       return snackbar
     },
     submit: function() {
-      return (!this.snackbar.flag && this.valid && this.videoDuration && this.linkFormData.length>0)
+      return (!this.snackbar.flag && this.valid && this.videoDuration && this.linkFormData.length>0 && this.mode)
     }
   },
   methods: {
@@ -324,6 +341,7 @@ export default {
       })
 
       bodyFormData.append('file', this.files)
+      bodyFormData.append('mode', this.mode)
 
       Axios
       .post(`${server_url}/upload`, bodyFormData, config)
@@ -360,6 +378,10 @@ export default {
 </script>
 
 <style scoped>
-
+.flex-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
 </style>

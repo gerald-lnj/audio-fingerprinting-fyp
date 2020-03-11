@@ -22,10 +22,12 @@ ROOT_PATH = os.environ.get("ROOT_PATH")
 # LOG = logger.get_root_logger(
 #     __name__, filename=os.path.join(ROOT_PATH, 'output.log'))
 
-USERS_COLLECTION = mongo.db.users
-VIDEOS_COLLECTION = mongo.db.videos  # holds reference to user
-ULTRASOUND_COLLECTION = mongo.db.ultrasound  # holds reference to video
-FINGERPRINTS_COLLECTION = mongo.db.fingerprints # holds reference to ultrasound (in couples)
+USERS_COLLECTION = mongo.db.users # holds reference to videos
+VIDEOS_COLLECTION = mongo.db.videos  # holds reference to links
+LINKS_COLLECTION = mongo.db.links  # holds reference to fingerprints
+FINGERPRINTS_COLLECTION = (
+    mongo.db.fingerprints
+)  # holds reference to links (in couples)
 
 @jwt.unauthorized_loader
 def unauthorized_response(callback):
@@ -158,22 +160,22 @@ def purge_records(email):
 def list_videos(video_ids):
     result = []
     for video_id in video_ids:
- 
+
         video = VIDEOS_COLLECTION.find_one({'_id': video_id})
-        ultrasounds = []
-        for ultrasound_id in video['ultrasounds']:
-            ultrasound = ULTRASOUND_COLLECTION.find_one({'_id': ultrasound_id})
-            ultrasound['_id'] = str(ultrasound['_id'])
-            del ultrasound['fingerprints']
-            ultrasounds.append(ultrasound)
-        # result[video['name']] = ultrasounds
+        links = []
+        for link_id in video['links']:
+            link = LINKS_COLLECTION.find_one({'_id': link_id})
+            link['_id'] = str(link['_id'])
+            del link['fingerprints']
+            links.append(link)
+        # result[video['name']] = links
         temp_result = {
             '_id': video_id,
             'name': video['name'],
-            'ultrasounds': ultrasounds
+            'links': links,
+            'mode': video['mode']
         }
         result.append(temp_result)
-
     return result
 
 @app.route("/delete-video", methods=["POST"])
@@ -195,15 +197,15 @@ def delete_video(video_id=None):
         video_doc = VIDEOS_COLLECTION.find_one({'_id': video_id})
 
         if video_doc is not None:
-            # build internal store of ultrasounds in video
+            # build internal store of links in video
             us_docs = []
-            us_ids = video_doc['ultrasounds']
+            us_ids = video_doc['links']
 
             if len(us_ids) > 0:
                 for us_id in us_ids:
-                    us_docs.append(ULTRASOUND_COLLECTION.find_one({"_id": us_id}))
+                    us_docs.append(LINKS_COLLECTION.find_one({"_id": us_id}))
 
-                # build internal store of fingeprints in each ultrasound
+                # build internal store of fingeprints in each link
                 fp_docs = {}
                 for us_doc in us_docs:
                     fp_ids = us_doc['fingerprints']
@@ -213,7 +215,7 @@ def delete_video(video_id=None):
 
                 # delete relevant couples from fingerprint
                 for fp_id, fp_doc in fp_docs.items():
-                    new_couples = [couple for couple in fp_doc['couple'] if couple['ultrasound_id'] not in us_ids]
+                    new_couples = [couple for couple in fp_doc['couple'] if couple['link_id'] not in us_ids]
 
                     # if there are unrelated couples, overwrite the 'couple' field with new_couples
                     if len(new_couples) > 0:
@@ -222,9 +224,9 @@ def delete_video(video_id=None):
                     else:
                         FINGERPRINTS_COLLECTION.delete_one({'_id': fp_id})
                 
-                # delete all ultrasounds
+                # delete all links
                 requests = [DeleteOne({'_id': us_id}) for us_id in us_ids]
-                ULTRASOUND_COLLECTION.bulk_write(requests)
+                LINKS_COLLECTION.bulk_write(requests)
 
             # delete video
             VIDEOS_COLLECTION.delete_one({'_id': video_doc['_id']})
