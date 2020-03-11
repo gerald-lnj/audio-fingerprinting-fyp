@@ -54,6 +54,7 @@
               <v-btn
                 icon
                 class="mr-2"
+                :disabled="!item.link"
                 :href="item.link"
               >
                 <v-icon small>
@@ -125,13 +126,15 @@
         raised
       >
         <v-card-title> {{ dialog_video.name }} </v-card-title>
-        <v-list disabled>
+        <v-list>
           <v-list-item-group color="primary">
             <v-list-item
               v-for="ultrasound in dialog_video.ultrasounds"
               :key="ultrasound._id"
               two-line
               ripple
+              :href="link.content"
+              target="_blank"
             >
               <v-list-item-content>
                 <v-list-item-title> {{ ultrasound.content }}</v-list-item-title>
