@@ -19,32 +19,38 @@
           {{ detected }}
         </p>
         <v-col>
-          <v-card
-            :v-if="detectedHistory.length > 0"
-            class="d-inline-block mx-auto"
+          <v-data-table
+            :headers="headers"
+            :items="detectedHistory"
+            :sort-desc="true"
+            hide-default-header
+            hide-default-footer
+            no-data-text="Tap the microphone to start detection!"
+            class="elevation-1"
           >
-            <transition name="card">
-              <virtual-list 
-                :size="virtualListSize" 
-                :remain="5"
+            <template v-slot:top v-if="true">
+              <v-toolbar flat short>
+                <v-toolbar-title>Detected Links</v-toolbar-title>
+                <v-spacer></v-spacer>
+
+                <v-btn @click="detectedHistory = []">
+                  Clear Links
+                </v-btn>
+              </v-toolbar>
+            </template>
+            <template v-slot:item.action="{ item }">
+              <v-btn
+                icon
+                class="mr-2"
+                :href="item.data"
+                target="_blank"
               >
-                <v-list-item
-                  v-for="entry in detectedHistory"
-                  :key="entry.time"
-                  :href="entry.data"
-                >
-                  <v-list-item-content>
-                    <v-list-item-title
-                      v-text="entry.data"
-                    />
-                    <v-list-item-subtitle
-                      v-text="entry.time"
-                    />
-                  </v-list-item-content>
-                </v-list-item>
-              </virtual-list>
-            </transition>
-          </v-card>
+                <v-icon small>
+                  mdi-open-in-new
+                </v-icon>
+              </v-btn>
+            </template>
+          </v-data-table>
         </v-col>
       </v-col>
     </v-row>
@@ -57,16 +63,19 @@
 import RecordRTC from 'recordrtc'
 import Axios from '../utilities/api';
 import moment from 'moment'
-import virtualList from 'vue-virtual-scroll-list'
 export default {
   name: 'Detect',
-  components: {'virtual-list': virtualList},
   data: function () {
     return {
       recording: false,
       recordingIcon: "mdi-microphone",
       debug: true,
       detected: "Waiting...",
+      headers: [
+        {text: 'Time', align: 'start',value: 'time'},
+        {text: 'Link', value: 'data'},
+        {text: 'Actions', value: 'action', sortable: false},
+      ],
       detectedHistory: [],
       updated: false
     }
