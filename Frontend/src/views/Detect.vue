@@ -8,12 +8,10 @@
             x-large
             color="primary"
             fab
-            text 
-            icon
             :disabled="!mode"
-            @click="toggleRecording"
+            @click="toggleRecording();noDataText='Waiting for results...'"
           >
-            <v-icon>{{ recordingIcon }}</v-icon>
+            <v-icon> mdi-microphone </v-icon>
           </v-btn>
         </v-col>
         <div class="flex-center">
@@ -32,9 +30,6 @@
             />
           </v-radio-group>
         </div>
-        <p v-if="recording">
-          {{ detected }}
-        </p>
         <v-col>
           <v-data-table
             :headers="headers"
@@ -42,7 +37,7 @@
             :sort-desc="true"
             hide-default-header
             hide-default-footer
-            no-data-text="Tap the microphone to start detection!"
+            :no-data-text=" noDataText"
             class="elevation-1"
           >
             <template
@@ -90,9 +85,8 @@ export default {
   data: function () {
     return {
       recording: false,
-      recordingIcon: "mdi-microphone",
+      noDataText: 'Tap the microphone to start detection!',
       debug: true,
-      detected: "Waiting...",
       headers: [
         {text: 'Time', align: 'start',value: 'time'},
         {text: 'Link', value: 'data'},
@@ -148,17 +142,12 @@ export default {
         if (msg.status == 200) {
           const resp = msg.data.message
           console.log(resp)
-          this.detected = "Detected!"
           const entry = {
             time: moment().format('h:mm:ss a'),
             data: resp
           }
           this.detectedHistory.push(entry)
           this.updated=true
-        }
-
-        else if (msg.status == 204) {
-          this.detected = "Waiting..."
         }
       })
       .catch((error) => {
@@ -169,11 +158,9 @@ export default {
     toggleRecording() {
       if (this.recording) {
         this.recording = false
-        this.recordingIcon = "mdi-microphone"
         this.stopRecording()
       } else {
         this.recording = true
-        // this.recordingIcon = "mdi-stop"
         this.startRecording()
       }
     },
@@ -215,10 +202,10 @@ export default {
 @keyframes shadow-pulse
 {
   0% {
-    box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.5);
   }
   100% {
-    box-shadow: 0 0 0 20px rgba(0, 0, 0, 0);
+    box-shadow: 0 0 0 40px rgba(0, 0, 0, 0);
   }
 }
 
