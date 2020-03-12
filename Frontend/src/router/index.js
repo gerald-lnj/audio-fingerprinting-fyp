@@ -9,13 +9,18 @@ const routes = [
     path: '/',
     name: 'home',
     component: () => import(/* webpackChunkName: "home" */ '../views/Home.vue'),
+    meta: {
+      helpText: 
+        'Welcome to the Audio Fingerprinting App!\n\
+        This app allows you to embed links into videos via the Upload page,\n\
+        and retrieve embedded links via the Detect page.\n\
+        You can also view your account details and videos in the Account Page!\n\
+        Click on this information button on each page for more details on how to use them!',
+    }
   },
   {
     path: '/about',
     name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "about" */ '../views/About.vue'),
   },
   {
@@ -23,7 +28,10 @@ const routes = [
     name: 'Login',
     component: () => import(/* webpackChunkName: "login" */ '../views/Login.vue'),
     meta: {
-      hideButton: true
+      hideButton: true,
+      helpText: 
+        'This is the login page.\n\
+        Please ensure that your password has a minimum length of 8 characters!'
     }
   },
   {
@@ -37,6 +45,13 @@ const routes = [
     component: () => import(/* webpackChunkName: "account" */ '../views/Account.vue'),
     meta: {
       requiresAuth: true,
+      hideButton: true,
+      helpText: 
+        'This is your account summary page.\n\
+        Here, you can check your account information, and see your past video records!\n\
+        You can also delete individual video records, or delete your account.\n\
+        Deleting a video removes the records from our database, and the videos can still be used as normal.\n\
+        Deleting your account will also remove all video records associated with your account!'
     }
   },
   {
@@ -45,17 +60,36 @@ const routes = [
     component: () => import(/* webpackChunkName: "upload" */ '../views/Upload.vue'),
     meta: {
       requiresAuth: true,
+      helpText: 
+        'This is the Upload page.\n\
+        Here, you can upload videos, and specify the links to be embedded at specific timestamps.\n\
+        There is a simple interface that allows you to insert links at the current video cursor time.\n\
+        Below, you can also manually input or edit the links!\n\
+        You can only submit the video if it passes all checks!\n\
+        Refer to the About page in the sidebar for details on Fingerprinting vs Watermarking.'
     }
   },
   {
     path: '/detect',
     name: 'Detect',
     component: () => import(/* webpackChunkName: "detect" */ '../views/Detect.vue'),
+    meta: {
+      helpText: 
+        'This is the Detect page.\n\
+        Here, you can retrieve embedded links from video by playing the video.\n\
+        Simply tap on the microphone to start, and tap again to stop. Make sure that the audio can be detected by your device\'s microphone!\n\
+        Refer to the About page in the sidebar for details on Fingerprinting vs Watermarking.'
+    }
   },
   {
     path: '/register',
     name: 'Register',
     component: () => import(/* webpackChunkName: "register" */ '../views/Register.vue'),
+    meta: {
+      helpText: 
+        'This is the Register page.\n\
+        Quite straightforward!'
+    }
   },
 ];
 

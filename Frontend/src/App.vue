@@ -55,18 +55,60 @@
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-toolbar-title>Fingerprinting</v-toolbar-title>
-      <v-layout
-        align-end
-        justify-end
+      <v-spacer />
+      <v-dialog
+        v-if="this.$route.meta.helpText"
+        v-model="help"
+
+        width="500"
       >
-        <v-btn
-          colour="indigo"
-          :disabled="this.$route.meta.hideButton"
-          :to="appBarBtnDest"
-        >
-          {{ buttonText }}
-        </v-btn>
-      </v-layout>
+        <template v-slot:activator="{ on }">
+          <v-btn
+            icon
+            v-on="on"
+          >
+            <v-icon>
+              mdi-help-circle
+            </v-icon>
+          </v-btn>
+        </template>
+
+        <v-card>
+          <v-card-title primary-title>
+            Help
+          </v-card-title>
+
+          <v-card-text>
+            <div
+              v-for="(text, index) in this.$route.meta.helpText.split('\n')"
+              :key="index"
+            >
+              {{ text }}
+            </div>
+          </v-card-text>
+
+          <v-card-actions>
+            <v-spacer />
+            <v-btn
+              color="primary"
+              text
+              @click="help = false"
+            >
+              Dismiss
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-btn
+        icon
+        :disabled="this.$route.meta.hideButton"
+        :to="appBarBtnDest"
+        active-class
+      >
+        <v-icon>
+          mdi-account-circle
+        </v-icon>
+      </v-btn>
     </v-app-bar>
 
 
@@ -96,6 +138,7 @@ export default {
   props: {
   },
   data: () => ({
+    help: false,
     drawer: false,
     snackbar: false,
   }),
