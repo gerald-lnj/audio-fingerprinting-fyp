@@ -7,123 +7,143 @@
     >
       <v-col align="center">
         <!-- Interactive Link Inserter -->
-        <v-card
-          v-show="videoDuration"
-          class="mx-auto"
-          tile
-        >
-          <v-col v-show="videoDuration">
-            <video
-              ref="video"
-              controls
-              playsinline
-              :width="$store.state.windowWidth -4*12"
-              height="auto" 
-              @timeupdate="insertSeekTime = Math.floor($event.target.currentTime)"
-            />
-          </v-col>
-          <v-col max-width="300">
-            <span class="subheading">Duration (Multiples of 10)</span>
-            <v-slider
-              v-model="insertDuration"
-              class="align-center"
-              :max="max"
-              :min="0"
-              step="10"
-              ticks="always"
-              thumb-label="always"
-              :thumb-size="24"
-            />
-          </v-col>
-
-          <v-col>
-            <v-form v-model="tempValid">
-              <v-text-field
-                v-model="insertSeekTime"
-                label="Start (seconds)"
-                :rules="[rules.numRules]"
-                disabled
+        <v-col>
+          <v-card
+            class="mx-auto"
+            tile
+          >
+            <v-card-title primary-title>
+              Link inserter
+            </v-card-title>
+            <v-col v-show="videoDuration">
+              <video
+                ref="video"
+                controls
+                playsinline
+                :width="$store.state.windowWidth -6*12"
+                height="auto" 
+                @timeupdate="insertSeekTime = Math.floor($event.target.currentTime)"
               />
-              <v-text-field
-                v-model="tempEndTime"
-                label="End (Seconds)"
-                :rules="[rules.numRules]"
-                disabled
+            </v-col>
+            <!-- File Selector -->
+            <v-col>
+              <v-file-input
+                v-model="files"
+                accept="video/mp4"
+                placeholder="mp4 only!"
+                label="Select video"
+                :show-size="1000"
+                @change="updateVideoDetails"
               />
-              <v-text-field
-                v-model="tempLink"
-                label="Link"
-                :rules="[rules.linkRules]"
-              />
-            </v-form>
-          </v-col>
-          <v-col>
-            <v-btn
-              :disabled="(insertDuration<=0) || !tempValid"
-              @click="addLink(insertSeekTime, tempEndTime, tempLink)"
+            </v-col>
+            <v-col
+              v-show="videoDuration"
+              max-width="300"
             >
-              Add link here
-            </v-btn>
-          </v-col>
-        </v-card>
+              <v-select
+                v-model="insertDuration"
+                :items="durations"
+                menu-props="auto"
+                label="Duration (Seconds), multiples of 10"
+                hide-details
+                prepend-icon="mdi-timer-sand"
+                no-data-text="The remaining duration of the video is too short to insert a link!"
+                single-line
+              />
+            </v-col>
 
-        <!-- File Selector -->
-        <v-col>
-          <v-file-input
-            v-model="files"
-            accept="video/mp4"
-            placeholder="mp4 only!"
-            label="Select video"
-            :show-size="1000"
-            @change="updateVideoDetails"
-          />
-        </v-col>
-
-        <!-- Manual Link Entry -->
-        <v-col>
-          <v-form v-model="valid">
-            <v-container>
-              <v-row 
-                v-for="(link, index) in linkFormData"
-                :key="index"
+            <v-col>
+              <v-form
+                v-show="videoDuration"
+                v-model="tempValid"
               >
                 <v-text-field
-                  v-model="link.start"
+                  v-model="insertSeekTime"
                   label="Start (seconds)"
-                  required
                   :rules="[rules.numRules]"
+                  disabled
                 />
                 <v-text-field
-                  v-model="link.end"
+                  v-model="tempEndTime"
                   label="End (Seconds)"
-                  required
                   :rules="[rules.numRules]"
+                  disabled
                 />
                 <v-text-field
-                  v-model="link.link"
+                  v-model="tempLink"
                   label="Link"
-                  required
                   :rules="[rules.linkRules]"
                 />
-                <v-btn
-                  icon
-                  @click="deleteLink(index)"
-                >
-                  <v-icon>mdi-minus-circle</v-icon>
-                </v-btn>
-              </v-row>
-            </v-container>
-          </v-form>
+              </v-form>
+            </v-col>
+            <v-col>
+              <v-btn
+                v-show="videoDuration"
+                :disabled="(insertDuration<=0) || !tempValid"
+                @click="addLink(insertSeekTime, tempEndTime, tempLink)"
+              >
+                Add link here
+              </v-btn>
+            </v-col>
+          </v-card>
         </v-col>
+
+        
         <v-col>
-          <v-btn
-            fab
-            small
-            bottom
-            @click="addLink(null, null, '')"
-          >
-            <v-icon>mdi-plus</v-icon>
-          </v-btn>
+          <!-- Manual Link Entry -->
+          <v-card
+            class="mx-auto"
+            tile
+          >            
+            <v-card-title primary-title>
+              Manual Link Editor
+            </v-card-title>
+            <v-col>
+              <v-form v-model="valid">
+                <v-container>
+                  <v-row 
+                    v-for="(link, index) in linkFormData"
+                    :key="index"
+                  >
+                    <v-text-field
+                      v-model="link.start"
+                      label="Start (seconds)"
+                      required
+                      :rules="[rules.numRules]"
+                    />
+                    <v-text-field
+                      v-model="link.end"
+                      label="End (Seconds)"
+                      required
+                      :rules="[rules.numRules]"
+                    />
+                    <v-text-field
+                      v-model="link.link"
+                      label="Link"
+                      required
+                      :rules="[rules.linkRules]"
+                    />
+                    <v-btn
+                      icon
+                      @click="deleteLink(index)"
+                    >
+                      <v-icon>mdi-minus-circle</v-icon>
+                    </v-btn>
+                  </v-row>
+                </v-container>
+              </v-form>
+            </v-col>
+            <v-col>
+              <v-btn
+                fab
+                small
+                bottom
+                @click="addLink(null, null, '')"
+              >
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </v-col>
+          </v-card>
         </v-col>
         <div class="flex-center">
           <v-radio-group
@@ -163,11 +183,10 @@
       <v-card
         v-if="success"
         class="mx-auto"
-        raised
       >
         <v-card-title> Success! </v-card-title>
         <v-card-text>
-          Here's your video. All videos are deleted from our server 2 hours are creation!
+          Here's your video. All videos are deleted from our server 2 hours after creation!
           You can also find your previous download links on your Account page.
         </v-card-text>
         <v-card-actions>
@@ -199,7 +218,7 @@ export default {
   data: () => ({
     tempValid: false,
     insertSeekTime: 0,
-    insertDuration: 10,
+    insertDuration: null,
     tempLink: '',
     videoDuration: null,
     files: null,
@@ -233,6 +252,13 @@ export default {
       const durationRemaining = this.videoDuration - this.insertSeekTime
 
       return durationRemaining - durationRemaining%10
+    },
+    durations: function() {
+      const array = []
+      for (let i = 10; i<=this.max; i+=10) {
+        array.push(i)
+      }
+      return array
     },
     snackbar: function() {
       const snackbar = {
@@ -324,6 +350,12 @@ export default {
         }
       }
       this.linkFormData.push(linkTemplate)
+      const vid = this.$refs.video
+      if (end != null) {
+        vid.currentTime = end;
+      }
+
+
     },
     deleteLink(index) {
       this.linkFormData.splice(index, 1)
