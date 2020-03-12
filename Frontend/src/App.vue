@@ -44,6 +44,19 @@
             <v-list-item-title>Upload</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+        <v-list-item
+          to="about"
+          link
+        >
+          <v-list-item-action>
+            <v-icon>mdi-information</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>
+              About
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
