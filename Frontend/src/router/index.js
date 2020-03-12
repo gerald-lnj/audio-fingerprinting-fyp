@@ -1,13 +1,6 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import Home from '../views/Home.vue';
-import NotFound from '../components/NotFound.vue';
-import Login from '../views/Login.vue';
-import Account from '../views/Account.vue'
 import store from '../store/index'
-import Upload from '../views/Upload.vue'
-import Detect from '../views/Detect.vue'
-import Register from '../views/Register.vue'
 
 Vue.use(VueRouter);
 
@@ -15,7 +8,7 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    component: Home,
+    component: () => import(/* webpackChunkName: "home" */ '../views/Home.vue'),
   },
   {
     path: '/about',
@@ -28,7 +21,7 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: Login,
+    component: () => import(/* webpackChunkName: "login" */ '../views/Login.vue'),
     meta: {
       hideButton: true
     }
@@ -36,12 +29,12 @@ const routes = [
   {
     path: '*',
     name: 'NotFound',
-    component: NotFound,
+    component: () => import(/* webpackChunkName: "notFound" */ '../components/NotFound.vue'),
   },
   {
     path: '/account',
     name: 'Account',
-    component: Account,
+    component: () => import(/* webpackChunkName: "account" */ '../views/Account.vue'),
     meta: {
       requiresAuth: true,
     }
@@ -49,7 +42,7 @@ const routes = [
   {
     path: '/upload',
     name: 'Upload',
-    component: Upload,
+    component: () => import(/* webpackChunkName: "upload" */ '../views/Upload.vue'),
     meta: {
       requiresAuth: true,
     }
@@ -57,12 +50,12 @@ const routes = [
   {
     path: '/detect',
     name: 'Detect',
-    component: Detect,
+    component: () => import(/* webpackChunkName: "detect" */ '../views/Detect.vue'),
   },
   {
     path: '/register',
     name: 'Register',
-    component: Register,
+    component: () => import(/* webpackChunkName: "register" */ '../views/Register.vue'),
   },
 ];
 
