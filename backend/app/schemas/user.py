@@ -9,8 +9,4 @@ user_schema = Dict(
     optional=["name"],
 )
 
-delete_vid_schema = Dict(
-    {
-        "video_id": Str()
-    }
-)
+delete_vid_schema = Dict({"video_id": Str()})

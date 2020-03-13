@@ -42,7 +42,7 @@ def hasher(peak, ultrasound_id=None):
         point_zone_end = point_zone_start + TARGET_ZONE_SIZE
         for j in range(point_zone_start, point_zone_end):
             anchor = peak[i]
-            point = peak[j] # anchor, but a set distance awa y
+            point = peak[j]  # anchor, but a set distance awa y
             anchor_frequency = anchor[1]
             pointfrequency = point[1]
             delta = point[0] - anchor[0]

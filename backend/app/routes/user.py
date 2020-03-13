@@ -22,12 +22,11 @@ ROOT_PATH = os.environ.get("ROOT_PATH")
 # LOG = logger.get_root_logger(
 #     __name__, filename=os.path.join(ROOT_PATH, 'output.log'))
 
-USERS_COLLECTION = mongo.db.users # holds reference to videos
+USERS_COLLECTION = mongo.db.users  # holds reference to videos
 VIDEOS_COLLECTION = mongo.db.videos  # holds reference to links
 LINKS_COLLECTION = mongo.db.links  # holds reference to fingerprints
-FINGERPRINTS_COLLECTION = (
-    mongo.db.fingerprints
-)  # holds reference to links (in couples)
+FINGERPRINTS_COLLECTION = mongo.db.fingerprints  # holds reference to links (in couples)
+
 
 @jwt.unauthorized_loader
 def unauthorized_response(callback):
@@ -48,7 +47,9 @@ def auth_user():
             {"email": form_data["email"]},
             {"_id": 0},  # this line removes the _id key from the returned obj
         )
-        if user_doc and flask_bcrypt.check_password_hash(user_doc["password"], form_data["password"]):
+        if user_doc and flask_bcrypt.check_password_hash(
+            user_doc["password"], form_data["password"]
+        ):
             del user_doc["password"]
             del user_doc["videos"]
             access_token = create_access_token(identity=form_data)
@@ -84,16 +85,25 @@ def register():
         return jsonify({"ok": False, "message": "Bad request parameters: "}), 400
     else:
         try:
-            user_doc = USERS_COLLECTION.find_one({"email": form_data["email"]}, {"_id": 0})
+            user_doc = USERS_COLLECTION.find_one(
+                {"email": form_data["email"]}, {"_id": 0}
+            )
 
             if user_doc is None:
-                USERS_COLLECTION.insert_one({
-                    'name': form_data['name'],
-                    'email': form_data['email'],
-                    'password': flask_bcrypt.generate_password_hash(form_data["password"]).decode("utf-8"),
-                    'videos': []
-                })
-                return jsonify({"ok": True, "message": "User created successfully!"}), 200
+                USERS_COLLECTION.insert_one(
+                    {
+                        "name": form_data["name"],
+                        "email": form_data["email"],
+                        "password": flask_bcrypt.generate_password_hash(
+                            form_data["password"]
+                        ).decode("utf-8"),
+                        "videos": [],
+                    }
+                )
+                return (
+                    jsonify({"ok": True, "message": "User created successfully!"}),
+                    200,
+                )
             else:
                 return (
                     jsonify(
@@ -103,23 +113,17 @@ def register():
                 )
         except Exception:
             print(traceback.format_exc())
-            return (
-                jsonify(
-                    {"ok": False, "message": "Unexpected error occured!"}
-                ), 500
-            )
+            return (jsonify({"ok": False, "message": "Unexpected error occured!"}), 500)
 
 
 @app.route("/refresh", methods=["POST"])
 @jwt_refresh_token_required
 def refresh():
-    '''
+    """
     When JWT has expired, issue new one with refresh token
-    '''
+    """
     current_user = get_jwt_identity()
-    ret = {
-        'access_token': create_access_token(identity=current_user)
-    }
+    ret = {"access_token": create_access_token(identity=current_user)}
     return jsonify(ret), 200
 
 
@@ -131,13 +135,13 @@ def user():
 
     if request.method == "GET":
         user_doc = USERS_COLLECTION.find_one({"email": email}, {"_id": 0})
-        video_ids = user_doc['videos']
+        video_ids = user_doc["videos"]
         result = list_videos(video_ids)
         return jsonify({"ok": True, "data": result}), 200
 
     if request.method == "DELETE":
         user_doc = USERS_COLLECTION.find_one({"email": email}, {"_id": 0})
-        for video_id in user_doc['videos']:
+        for video_id in user_doc["videos"]:
             delete_video(video_id)
         db_response = USERS_COLLECTION.delete_one({"email": email})
         if db_response.deleted_count == 1:
@@ -150,33 +154,38 @@ def user():
 
     if request.method == "PATCH":
         if data.get("query", {}) != {}:
-            USERS_COLLECTION.update_one(data["query"], {"$set": data.get("payload", {})})
+            USERS_COLLECTION.update_one(
+                data["query"], {"$set": data.get("payload", {})}
+            )
             return jsonify({"ok": True, "message": "record updated"}), 200
         return jsonify({"ok": False, "message": "Bad request parameters!"}), 400
 
+
 def purge_records(email):
     data = USERS_COLLECTION.find_one({"email": email}, {"_id": 0})
+
 
 def list_videos(video_ids):
     result = []
     for video_id in video_ids:
 
-        video = VIDEOS_COLLECTION.find_one({'_id': video_id})
+        video = VIDEOS_COLLECTION.find_one({"_id": video_id})
         links = []
-        for link_id in video['links']:
-            link = LINKS_COLLECTION.find_one({'_id': link_id})
-            link['_id'] = str(link['_id'])
-            del link['fingerprints']
+        for link_id in video["links"]:
+            link = LINKS_COLLECTION.find_one({"_id": link_id})
+            link["_id"] = str(link["_id"])
+            del link["fingerprints"]
             links.append(link)
         # result[video['name']] = links
         temp_result = {
-            '_id': video_id,
-            'name': video['name'],
-            'links': links,
-            'mode': video['mode']
+            "_id": video_id,
+            "name": video["name"],
+            "links": links,
+            "mode": video["mode"],
         }
         result.append(temp_result)
     return result
+
 
 @app.route("/delete-video", methods=["POST"])
 @jwt_required
@@ -189,17 +198,17 @@ def delete_video(video_id=None):
             print(e)
 
             return jsonify({"ok": False, "message": "Bad request parameters"}), 400
-        video_id = ObjectId(form_data['video_id'])
+        video_id = ObjectId(form_data["video_id"])
     try:
         email = get_jwt_identity()["email"]
         user_doc = USERS_COLLECTION.find_one({"email": email}, {"_id": 0})
 
-        video_doc = VIDEOS_COLLECTION.find_one({'_id': video_id})
+        video_doc = VIDEOS_COLLECTION.find_one({"_id": video_id})
 
         if video_doc is not None:
             # build internal store of links in video
             us_docs = []
-            us_ids = video_doc['links']
+            us_ids = video_doc["links"]
 
             if len(us_ids) > 0:
                 for us_id in us_ids:
@@ -208,38 +217,43 @@ def delete_video(video_id=None):
                 # build internal store of fingeprints in each link
                 fp_docs = {}
                 for us_doc in us_docs:
-                    fp_ids = us_doc['fingerprints']
+                    fp_ids = us_doc["fingerprints"]
                     for fp_id in fp_ids:
                         if fp_id not in fp_docs:
-                            fp_docs[fp_id] = FINGERPRINTS_COLLECTION.find_one({'_id': fp_id})
+                            fp_docs[fp_id] = FINGERPRINTS_COLLECTION.find_one(
+                                {"_id": fp_id}
+                            )
 
                 # delete relevant couples from fingerprint
                 for fp_id, fp_doc in fp_docs.items():
-                    new_couples = [couple for couple in fp_doc['couple'] if couple['link_id'] not in us_ids]
+                    new_couples = [
+                        couple
+                        for couple in fp_doc["couple"]
+                        if couple["link_id"] not in us_ids
+                    ]
 
                     # if there are unrelated couples, overwrite the 'couple' field with new_couples
                     if len(new_couples) > 0:
-                        FINGERPRINTS_COLLECTION.update_one({'_id': fp_id}, {'$set': {"couple": new_couples}})
+                        FINGERPRINTS_COLLECTION.update_one(
+                            {"_id": fp_id}, {"$set": {"couple": new_couples}}
+                        )
                     # else, delete the fingerprint
                     else:
-                        FINGERPRINTS_COLLECTION.delete_one({'_id': fp_id})
-                
+                        FINGERPRINTS_COLLECTION.delete_one({"_id": fp_id})
+
                 # delete all links
-                requests = [DeleteOne({'_id': us_id}) for us_id in us_ids]
+                requests = [DeleteOne({"_id": us_id}) for us_id in us_ids]
                 LINKS_COLLECTION.bulk_write(requests)
 
             # delete video
-            VIDEOS_COLLECTION.delete_one({'_id': video_doc['_id']})
+            VIDEOS_COLLECTION.delete_one({"_id": video_doc["_id"]})
 
-            USERS_COLLECTION.update_one({'email': email}, {'$pull': {'videos': video_doc['_id']}})
+            USERS_COLLECTION.update_one(
+                {"email": email}, {"$pull": {"videos": video_doc["_id"]}}
+            )
 
             return (
-                jsonify(
-                    {
-                        "ok": True,
-                        "message": 'Success!',
-                    }
-                ),
+                jsonify({"ok": True, "message": "Success!",}),
                 200,
             )
         else:

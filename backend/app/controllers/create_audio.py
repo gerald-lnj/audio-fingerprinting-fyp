@@ -10,13 +10,14 @@ from pydub import AudioSegment
 
 CWD = os.getcwd()
 
+
 def ultrasound_generator(seed):
     """
     Creates ultrasound based on string seed.
     Base64-encodes the seed to use as filename.
     Returns the filenmae as string.
     """
-    
+
     hash_object = hashlib.sha512(seed.encode())
     hex_dig = hash_object.hexdigest()
 
@@ -43,13 +44,14 @@ def ultrasound_generator(seed):
 
     return ultrasound_filename
 
+
 def audio_extractor(extracted_audio_filepath, seed, start, end):
     print(extracted_audio_filepath)
     audio_filename = base64.urlsafe_b64encode(seed.encode("utf-8")).decode("utf-8")
     output_filepath = "{}/output_audio/{}.wav".format(CWD, audio_filename)
 
     new_audio = AudioSegment.from_wav(extracted_audio_filepath)
-    new_audio = new_audio[start*1000 : end*1000]
+    new_audio = new_audio[start * 1000 : end * 1000]
     new_audio.export(output_filepath, format="wav")
 
     return audio_filename

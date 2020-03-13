@@ -24,7 +24,7 @@ def match(fingerprints, mode):
 
     match_dict = {}
 
-    if mode == 'ultrasound':
+    if mode == "ultrasound":
         FINGERPRINTS_COLLECTION = US_FINGERPRINTS_COLLECTION
     else:
         FINGERPRINTS_COLLECTION = AU_FINGERPRINTS_COLLECTION

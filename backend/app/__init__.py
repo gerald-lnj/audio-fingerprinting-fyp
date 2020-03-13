@@ -17,6 +17,7 @@ load_dotenv(".flaskenv")
 # create the flask object
 app = Flask(__name__)
 
+
 class JSONEncoder(json.JSONEncoder):
     """ extend json-encoder class"""
 
@@ -28,6 +29,8 @@ class JSONEncoder(json.JSONEncoder):
         if isinstance(o, datetime.datetime):
             return str(o)
         return json.JSONEncoder.default(self, o)
+
+
 app.json_encoder = JSONEncoder
 
 # CORS stuff
@@ -50,8 +53,10 @@ app.config["UPLOADED_VIDEOS_DEST"] = os.getenv("UPLOADED_VIDEOS_DEST")
 # config apscheduler stuff
 app.config["SCHEDULER_API_ENABLED"] = True
 app.config["SCHEDULER_JOBSTORES"] = {
-        'default': MongoDBJobStore(database='fyp', collection='jobs', host='localhost', port=27017)
-    }
+    "default": MongoDBJobStore(
+        database="fyp", collection="jobs", host="localhost", port=27017
+    )
+}
 scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()

@@ -20,6 +20,7 @@ FILTER_WINDOW_SIZE = 40
 
 ULTRASOUND_ABS_MIN_AMP = 8
 
+
 def analyse(audio, mode):
     """
     returns 2d int array of peaks
@@ -70,7 +71,7 @@ def find_peak(spectrum, mode):
     # peak = [..., anchor, ...]
     # anchor = [time,  freq, amp]
     """
-    if mode == 'ultrasound':
+    if mode == "ultrasound":
         freq_range = ULTRASOUND_RANGE
     else:
         freq_range = AUDIBLE_RANGE
@@ -111,7 +112,7 @@ def find_peak(spectrum, mode):
             freq = peak[i][j]
             amp = abs(spectrum[i][freq])
             threshold = ULTRASOUND_ABS_MIN_AMP
-            if amp >= mean_mag[i // FILTER_WINDOW_SIZE] and amp>=threshold:
+            if amp >= mean_mag[i // FILTER_WINDOW_SIZE] and amp >= threshold:
                 temp = [i, freq, int(amp)]
                 peak_filtered.append(temp)
     return peak_filtered
@@ -130,16 +131,19 @@ def hann_window(recorded_data):
 
     return new_recorded_data
 
+
 def video_to_wav(video_filename):
     video_filepath = "{}/uploaded_files/{}".format(CWD, video_filename)
     output_filepath = "{}/uploaded_files/{}.wav".format(CWD, video_filename)
     ffmpeg_builder = ["ffmpeg", "-hide_banner", "-loglevel", "error"]
     ffmpeg_builder.extend(["-i", video_filepath])
-    ffmpeg_builder.extend(['-ab', '160k', '-ac', '2', '-ar', '44100', '-vn', output_filepath])
+    ffmpeg_builder.extend(
+        ["-ab", "160k", "-ac", "2", "-ar", "44100", "-vn", output_filepath]
+    )
     try:
         subprocess.run(ffmpeg_builder, check=True)
     except subprocess.CalledProcessError:
         return None
     print(output_filepath)
-  
+
     return output_filepath
