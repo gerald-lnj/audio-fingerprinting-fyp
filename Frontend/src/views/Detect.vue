@@ -80,6 +80,8 @@
 import RecordRTC from 'recordrtc'
 import Axios from '../utilities/api';
 import moment from 'moment'
+// import VueElementLoading from 'vue-element-loading'
+
 export default {
   name: 'Detect',
   data: function () {
