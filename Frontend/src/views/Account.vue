@@ -5,8 +5,7 @@
         <!-- Account Details Card -->
         <v-col>
           <v-card
-            class="mx-auto"
-            tile
+            default
           >
             <v-card-title> Account Details </v-card-title>
             <v-list disabled>
@@ -123,7 +122,6 @@
       <v-card
         v-if="info_dialog"
         class="mx-auto"
-        raised
       >
         <v-card-title> {{ dialog_video.name }} </v-card-title>
         <v-list>
@@ -168,7 +166,6 @@
       <v-card
         v-if="delete_dialog"
         class="mx-auto"
-        raised
       >
         <v-card-title> Delete {{ dialog_video.name }} ? </v-card-title>
         <v-card-text>
