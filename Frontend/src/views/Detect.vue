@@ -39,6 +39,7 @@
             hide-default-footer
             :no-data-text=" noDataText"
             class="elevation-1"
+            @click:row="openLink"
           >
             <template
               v-slot:top
@@ -54,18 +55,6 @@
                   Clear Links
                 </v-btn>
               </v-toolbar>
-            </template>
-            <template v-slot:item.action="{ item }">
-              <v-btn
-                icon
-                class="mr-2"
-                :href="item.data"
-                target="_blank"
-              >
-                <v-icon small>
-                  mdi-open-in-new
-                </v-icon>
-              </v-btn>
             </template>
           </v-data-table>
         </v-col>
@@ -92,7 +81,6 @@ export default {
       headers: [
         {text: 'Time', align: 'start',value: 'time'},
         {text: 'Link', value: 'data'},
-        {text: 'Actions', value: 'action', sortable: false},
       ],
       detectedHistory: [],
       updated: false,
@@ -195,6 +183,9 @@ export default {
     download() {
       this.recordRTC.save('audio.wav');
       this.recordRTC.ge
+    },
+    openLink(entry) {
+      window.open(entry.data, '_blank');
     }
   }
 }
