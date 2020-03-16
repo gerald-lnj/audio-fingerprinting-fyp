@@ -236,7 +236,7 @@ export default {
         return /([0-9]+)/g.test(v) ? true: "Please enter a number!"
       },
       linkRules: v => {
-        if (/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/g.test(v)) {
+        if (/((?:https?:)\/\/(?:[\w]+[.][\w]+)+\/?)+$/g.test(v)) {
           return true
         } else return "Not a valid URL!"
       }
