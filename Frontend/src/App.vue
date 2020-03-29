@@ -67,7 +67,7 @@
       dark
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-toolbar-title>Fingerprinting</v-toolbar-title>
+      <v-toolbar-title>Link Embedder</v-toolbar-title>
       <v-spacer />
       <v-dialog
         v-if="this.$route.meta.helpText"
