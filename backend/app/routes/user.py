@@ -1,5 +1,6 @@
 """ controller and routes for users """
 import os
+import itertools
 import traceback
 from bson.objectid import ObjectId
 from flask import request, jsonify
@@ -25,8 +26,10 @@ ROOT_PATH = os.environ.get("ROOT_PATH")
 USERS_COLLECTION = mongo.db.users  # holds reference to videos
 VIDEOS_COLLECTION = mongo.db.videos  # holds reference to links
 LINKS_COLLECTION = mongo.db.links  # holds reference to fingerprints
-FINGERPRINTS_COLLECTION = mongo.db.fingerprints  # holds reference to links (in couples)
 
+# holds reference to links
+US_FINGERPRINTS_COLLECTION = mongo.db.ultrasound_fingerprints
+AU_FINGERPRINTS_COLLECTION = mongo.db.audible_fingerprints
 
 @jwt.unauthorized_loader
 def unauthorized_response(callback):
@@ -214,46 +217,54 @@ def delete_video(video_id=None):
 
         video_doc = VIDEOS_COLLECTION.find_one({"_id": video_id})
 
+        if video_doc["mode"] == "ultrasound":
+            FINGERPRINTS_COLLECTION = US_FINGERPRINTS_COLLECTION
+        else:
+            FINGERPRINTS_COLLECTION = AU_FINGERPRINTS_COLLECTION
+
         if video_doc is not None:
-            if video_doc["upllader_email"] != email:
+            if video_doc["uploader_email"] != email:
                 return 401
             # build internal store of links in video
-            us_docs = []
-            us_ids = video_doc["links"]
+            link_docs = []
+            link_ids = video_doc["links"]
 
-            if len(us_ids) > 0:
-                for us_id in us_ids:
-                    us_docs.append(LINKS_COLLECTION.find_one({"_id": us_id}))
+            if len(link_ids) > 0:
+                for link_id in link_ids:
+                    link_docs.append(LINKS_COLLECTION.find_one({"_id": link_id}))
 
                 # build internal store of fingeprints in each link
                 fp_docs = {}
-                for us_doc in us_docs:
-                    fp_ids = us_doc["fingerprints"]
-                    for fp_id in fp_ids:
-                        if fp_id not in fp_docs:
-                            fp_docs[fp_id] = FINGERPRINTS_COLLECTION.find_one(
-                                {"_id": fp_id}
-                            )
+                link_docs = [link_doc["fingerprints"] for link_doc in link_docs]
+                chain = itertools.chain(*link_docs)
+                fp_ids = set(chain)
+
+                for fp_id in fp_ids:
+                    fp_docs[fp_id] = FINGERPRINTS_COLLECTION.find_one(
+                        {"_id": fp_id}
+                    )
+
 
                 # delete relevant couples from fingerprint
                 for fp_id, fp_doc in fp_docs.items():
-                    new_couples = [
-                        couple
-                        for couple in fp_doc["couple"]
-                        if couple["link_id"] not in us_ids
-                    ]
+                    if fp_id is not None and fp_doc is not None:
+                        new_couples = [
+                            couple
+                            for couple in fp_doc["couple"]
+                            if couple["link_id"] not in link_ids
+                        ]
 
-                    # if there are unrelated couples, overwrite the 'couple' field with new_couples
-                    if len(new_couples) > 0:
-                        FINGERPRINTS_COLLECTION.update_one(
-                            {"_id": fp_id}, {"$set": {"couple": new_couples}}
-                        )
-                    # else, delete the fingerprint
-                    else:
-                        FINGERPRINTS_COLLECTION.delete_one({"_id": fp_id})
+                        # if there are unrelated couples, overwrite the 'couple' field with new_couples
+                        if len(new_couples) > 0:
+                            FINGERPRINTS_COLLECTION.update_one(
+                                {"_id": fp_id}, {"$set": {"couple": new_couples}}
+                            )
+                        # else, delete the fingerprint
+                        else:
+                            FINGERPRINTS_COLLECTION.delete_one({"_id": fp_id})
 
                 # delete all links
-                requests = [DeleteOne({"_id": us_id}) for us_id in us_ids]
+                requests = [DeleteOne({"_id": us_id}) for us_id in link_ids]
                 LINKS_COLLECTION.bulk_write(requests)
 
             # delete video
@@ -270,5 +281,5 @@ def delete_video(video_id=None):
         else:
             return jsonify({"ok": False, "message": "The file was not found"}), 404
     except Exception as e:
-        print(e)
+        print(traceback.format_exc())
         return jsonify({"ok": False, "message": "There was an error"}), 500

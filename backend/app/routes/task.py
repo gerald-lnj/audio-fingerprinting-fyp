@@ -145,9 +145,10 @@ def upload_file():
         for address, couple_list in link_audio_fingerprints.items():
             fingerprint_id = FINGERPRINTS_COLLECTION.find_one({"address": address})
             if fingerprint_id:
-                _id = FINGERPRINTS_COLLECTION.update_one(
+                _id = fingerprint_id["_id"]
+                FINGERPRINTS_COLLECTION.update_one(
                     {"address": address}, {"$push": {"couple": {"$each": couple_list}}}
-                ).upserted_id
+                )
             else:
                 _id = FINGERPRINTS_COLLECTION.insert_one(
                     {"address": address, "couple": couple_list}
