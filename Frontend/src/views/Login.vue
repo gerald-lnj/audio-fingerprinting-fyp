@@ -81,11 +81,11 @@ export default {
     login() {
       const bodyFormData = new FormData();
 
-      // bodyFormData.set('email', this.email)
-      // bodyFormData.set('password', this.password)
+      bodyFormData.set('email', this.email)
+      bodyFormData.set('password', this.password)
 
-      bodyFormData.set('email', 'test@test.com')
-      bodyFormData.set('password', '12345678')
+      // bodyFormData.set('email', 'test@test.com')
+      // bodyFormData.set('password', '12345678')
 
       const server_url = process.env.VUE_APP_SERVER_URL
 
