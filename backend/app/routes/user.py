@@ -135,14 +135,23 @@ def user():
 
     if request.method == "GET":
         user_doc = USERS_COLLECTION.find_one({"email": email}, {"_id": 0})
-        video_ids = user_doc["videos"]
+
+        try:
+            video_ids = user_doc["videos"]
+        except TypeError:
+            return 404
         result = list_videos(video_ids)
         return jsonify({"ok": True, "data": result}), 200
 
     if request.method == "DELETE":
         user_doc = USERS_COLLECTION.find_one({"email": email}, {"_id": 0})
+
+        if user_doc is None:
+            return 404
+
         for video_id in user_doc["videos"]:
             delete_video(video_id)
+
         db_response = USERS_COLLECTION.delete_one({"email": email})
         if db_response.deleted_count == 1:
             response = {"ok": True, "message": "record deleted"}
@@ -206,6 +215,8 @@ def delete_video(video_id=None):
         video_doc = VIDEOS_COLLECTION.find_one({"_id": video_id})
 
         if video_doc is not None:
+            if video_doc["upllader_email"] != email:
+                return 401
             # build internal store of links in video
             us_docs = []
             us_ids = video_doc["links"]
