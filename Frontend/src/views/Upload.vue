@@ -186,12 +186,12 @@
       >
         <v-card-title> Success! </v-card-title>
         <v-card-text>
-          Here's your video. All videos are deleted from our server 2 hours after creation!
-          You can also find your previous download links on your Account page.
+          {{ successMessage }}
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn
+            v-if="mode!='audible'"
             download
             :href="link"
           >
@@ -316,6 +316,12 @@ export default {
     },
     submit: function() {
       return (!this.snackbar.flag && this.valid && this.videoDuration && this.linkFormData.length>0 && this.mode)
+    },
+    successMessage: function() {
+      if (this.mode == 'ultrasound') {
+        return 'Here\'s your video. All videos are deleted from our server 2 hours after creation!\n\
+          You can also find your previous download links on your Account page.'
+      } else return 'Success! You can use your video as-is for detection! You can also see more details in your Account page!'
     }
   },
   methods: {
