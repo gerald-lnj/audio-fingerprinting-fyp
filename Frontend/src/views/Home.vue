@@ -3,6 +3,14 @@
     <v-row>
       <v-col align="center">
         <v-col>
+          <v-img
+            src="@/assets/logo.png"
+            aspect-ratio="1"
+            max-height="100"
+            contain
+          />
+        </v-col>
+        <v-col>
           <v-btn
             to="detect"
           > 
@@ -18,7 +26,7 @@
           </v-btn>
         </v-col>
 
-        <v-col>
+        <v-col v-if="false">
           <v-btn
             @click="resetState"
           > 
