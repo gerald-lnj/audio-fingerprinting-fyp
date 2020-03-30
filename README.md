@@ -14,9 +14,19 @@ Python 3.8.0
 
 flask 1.1.1
 
-mongodb 4.2
+mongodb 4.2.5
+
+ffmpeg 4.2.2
+
+### Start mongodb service with mac
 
 brew services start mongodb-community@4.2
+
+### run flask production server using gunicorn
+
+cd to /backend
+
+gunicorn -c gunicorn.conf.py backend:app
 
 ## django auth
 
