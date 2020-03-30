@@ -39,7 +39,7 @@ def match(fingerprints, mode):
         if db_fingerprint:
             db_couples = db_fingerprint["couple"]
             for db_couple in db_couples:
-                ultrasound_id = db_couple["ultrasound_id"]
+                ultrasound_id = db_couple["link_id"]
                 absolute_time = int(db_couple["absolute_time"])
                 delta = int(fingerprint["absolute_time"] - absolute_time)
                 couple = (ultrasound_id, absolute_time)  # holds ints
