@@ -169,7 +169,7 @@
       >
         <v-card-title> Delete {{ dialog_video.name }} ? </v-card-title>
         <v-card-text>
-          Deleting only removes fingerprints from our database. You can stil play your videos, but you won't be able to retieve metadata though our detection!
+          Deleting only removes fingerprints from our database. You can stil play your videos, but you won't be able to retrieve links though our detection!
         </v-card-text>
         <v-card-actions>
           <v-spacer />
