@@ -90,6 +90,33 @@ def upload_file():
         }
         for time_entry in form_data.getlist("time")
     ]
+
+    # in Audio Fingerprinting mode, fingerprints are calculated from the entire chunk of audio.
+    # If the user selects chunks of audio >10s, eg 20s,
+    # fingerprints will be generated from peaks across the entire 20s.
+    # The microphone in frontend only records in chunks of 10s,
+    # hence, fingeprints are generated from partial audio segment.
+    # here, we split links longer than 10s into 10s chunks.
+    if mode == 'audible':
+        split_links = []
+        for i, _p in enumerate(time_dicts):
+            if _p["end"]-_p["start"] > 10:
+                original_start = _p["start"]
+                original_end = _p["end"]
+                temp_start = original_start
+                temp_end = original_start
+                while temp_end < original_end:
+                    temp_end += 10
+                    split_links.append({
+                        "start": temp_start,
+                        "end": temp_end,
+                        "link": _p["link"]
+                    })
+                    temp_start += 10
+            else:
+                split_links.append(_p)
+        time_dicts = split_links
+
     time_dicts = sorted(time_dicts, key=lambda k: k["start"])
     extracted_audio_filepath = audio_analysis.video_to_wav(video_filename)
 
