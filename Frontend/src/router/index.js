@@ -2,13 +2,22 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import store from '../store/index'
 
+const Home = r => require.ensure([], () => r(require('../views/Home.vue')))
+const Login = r => require.ensure([], () => r(require('../views/Login.vue')))
+const Account = r => require.ensure([], () => r(require('../views/Account.vue')))
+const Upload = r => require.ensure([], () => r(require('../views/Upload.vue')))
+const Detect = r => require.ensure([], () => r(require('../views/Detect.vue')))
+const Register = r => require.ensure([], () => r(require('../views/Register.vue')))
+const About = r => require.ensure([], () => r(require('../views/About.vue')))
+const NotFound = r => require.ensure([], () => r(require('../components/NotFound.vue')))
+
 Vue.use(VueRouter);
 
 const routes = [
   {
     path: '/',
     name: 'home',
-    component: () => import(/* webpackChunkName: "home" */ '../views/Home.vue'),
+    component: Home,
     meta: {
       helpText: 
         'Welcome to the Audio Fingerprinting App!\n\
@@ -21,12 +30,12 @@ const routes = [
   {
     path: '/about',
     name: 'about',
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue'),
+    component: About,
   },
   {
     path: '/login',
     name: 'Login',
-    component: () => import(/* webpackChunkName: "login" */ '../views/Login.vue'),
+    component: Login,
     meta: {
       hideButton: true,
       helpText: 
@@ -37,12 +46,12 @@ const routes = [
   {
     path: '*',
     name: 'NotFound',
-    component: () => import(/* webpackChunkName: "notFound" */ '../components/NotFound.vue'),
+    component: NotFound,
   },
   {
     path: '/account',
     name: 'Account',
-    component: () => import(/* webpackChunkName: "account" */ '../views/Account.vue'),
+    component: Account,
     meta: {
       requiresAuth: true,
       hideButton: true,
@@ -57,7 +66,7 @@ const routes = [
   {
     path: '/upload',
     name: 'Upload',
-    component: () => import(/* webpackChunkName: "upload" */ '../views/Upload.vue'),
+    component: Upload,
     meta: {
       requiresAuth: true,
       helpText: 
@@ -72,7 +81,7 @@ const routes = [
   {
     path: '/detect',
     name: 'Detect',
-    component: () => import(/* webpackChunkName: "detect" */ '../views/Detect.vue'),
+    component: Detect,
     meta: {
       helpText: 
         'This is the Detect page.\n\
@@ -84,7 +93,7 @@ const routes = [
   {
     path: '/register',
     name: 'Register',
-    component: () => import(/* webpackChunkName: "register" */ '../views/Register.vue'),
+    component: Register,
     meta: {
       helpText: 
         'This is the Register page.\n\
