@@ -75,6 +75,7 @@ const routes = [
         There is a simple interface that allows you to insert links at the current video cursor time.\n\
         Below, you can also manually input or edit the links!\n\
         You can only submit the video if it passes all checks!\n\
+        If you select Fingerprinting mode, links can only be 20 seconds long.\n\
         Refer to the About page in the sidebar for details on Fingerprinting vs Watermarking.'
     }
   },

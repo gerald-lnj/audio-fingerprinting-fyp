@@ -83,8 +83,11 @@ export default {
         {text: 'Link', value: 'data'},
       ],
       detectedHistory: [],
-      updated: false,
-      mode: null
+      mode: null,
+      latestLink: {
+        link: null,
+        occurences: 0,
+      }
     }
   },
   computed: {
@@ -131,19 +134,30 @@ export default {
       .then((msg)=>{
         if (msg.status == 200) {
           const resp = msg.data.message
-          console.log(resp)
-          const entry = {
-            time: moment().format('h:mm:ss a'),
-            data: resp
-          }
-          this.detectedHistory.push(entry)
-          this.updated=true
+          this.updateDetectedHistory(resp)
         }
       })
       .catch((error) => {
         console.error(error)
         return null
       })
+    },
+    updateDetectedHistory(link) {
+        console.log(link)
+        const time = moment().format('h:mm:ss a')
+        if (this.latestLink.link == link) {
+          this.latestLink.occurences = this.latestLink.occurences + 1
+          if (this.latestLink.occurences > 1) {
+            const entry = {
+              time: time,
+              data: link
+            }
+            this.detectedHistory.push(entry)
+          }
+        } else {
+          this.latestLink.link = link
+          this.latestLink.occurences = 1
+        }
     },
     toggleRecording() {
       if (this.recording) {
@@ -182,7 +196,6 @@ export default {
     },
     download() {
       this.recordRTC.save('audio.wav');
-      this.recordRTC.ge
     },
     openLink(entry) {
       window.open(entry.data, '_blank');

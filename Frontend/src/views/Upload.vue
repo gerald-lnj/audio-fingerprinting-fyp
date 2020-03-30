@@ -6,6 +6,33 @@
       justify="center"
     >
       <v-col align="center">
+        <v-col>
+          <v-card
+            class="mx-auto"
+            tile
+          >
+            <v-card-title primary-title>
+              Select Mode
+            </v-card-title>
+            <div class="flex-center">
+              <v-radio-group
+                v-model="mode"
+                row
+                :mandatory="false"
+              >
+                <v-radio
+                  label="Watermarking"
+                  value="ultrasound"
+                />
+                <v-radio
+                  label="Fingerprinting"
+                  value="audible"
+                />
+              </v-radio-group>
+            </div>
+          </v-card>
+        </v-col>
+        
         <!-- Interactive Link Inserter -->
         <v-col>
           <v-card
@@ -20,7 +47,7 @@
                 ref="video"
                 controls
                 playsinline
-                :width="$store.state.windowWidth -6*12"
+                :width="$store.state.windowWidth -7*12"
                 height="auto" 
                 @timeupdate="insertSeekTime = Math.floor($event.target.currentTime)"
               />
@@ -33,6 +60,7 @@
                 placeholder="mp4 only!"
                 label="Select video"
                 :show-size="1000"
+                :disabled="mode==null"
                 @change="updateVideoDetails"
               />
             </v-col>
@@ -44,7 +72,7 @@
                 v-model="insertDuration"
                 :items="durations"
                 menu-props="auto"
-                label="Duration (Seconds), multiples of 10"
+                label="Duration (Seconds), multiples of 20"
                 hide-details
                 prepend-icon="mdi-timer-sand"
                 no-data-text="The remaining duration of the video is too short to insert a link!"
@@ -109,18 +137,21 @@
                       v-model="link.start"
                       label="Start (seconds)"
                       required
+                      :disabled="mode==null"
                       :rules="[rules.numRules]"
                     />
                     <v-text-field
                       v-model="link.end"
                       label="End (Seconds)"
                       required
+                      :disabled="mode==null"
                       :rules="[rules.numRules]"
                     />
                     <v-text-field
                       v-model="link.link"
                       label="Link"
                       required
+                      :disabled="mode==null"
                       :rules="[rules.linkRules]"
                     />
                     <v-btn
@@ -145,22 +176,6 @@
             </v-col>
           </v-card>
         </v-col>
-        <div class="flex-center">
-          <v-radio-group
-            v-model="mode"
-            row
-            :mandatory="false"
-          >
-            <v-radio
-              label="Watermarking"
-              value="ultrasound"
-            />
-            <v-radio
-              label="Fingerprinting"
-              value="audible"
-            />
-          </v-radio-group>
-        </div>
 
         <!-- Submit Button -->
         <v-col>        
@@ -191,7 +206,7 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
-            v-if="mode!='audible'"
+            v-if="mode=='ultrasound'"
             download
             :href="link"
           >
@@ -255,7 +270,7 @@ export default {
     },
     durations: function() {
       const array = []
-      for (let i = 10; i<=this.max; i+=10) {
+      for (let i = 20; i<=this.max; i+=20) {
         array.push(i)
       }
       return array
@@ -282,7 +297,7 @@ export default {
           }
           
           if ((currentLink.start - currentLink.end) % 10 != 0) {
-            errorMessages.push('Duration has to be in multiples of 10 seconds!')
+            errorMessages.push('Duration has to be in multiples of 20 seconds!')
             error = true
           }
 
