@@ -268,8 +268,13 @@ export default {
       .then(() => {
         this.getAccountRecords()
       })
-      .catch(error => {
-        console.error(error)
+      .catch(() => {
+        // console.error(error)
+        this.$store.commit('updateSnackbar', {
+          flag: true,
+          snackbarMsg: 'There was a server error!',
+          timeout: 3000
+        })
       })
     },
     showVideoDetails(video) {

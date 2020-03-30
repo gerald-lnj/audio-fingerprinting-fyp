@@ -115,8 +115,8 @@ export default {
        };
       const isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveOrOpenBlob || !!navigator.msSaveBlob);
       const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-      console.log(`isEdge: ${isEdge}`)
-      console.log(`isSafari: ${isSafari}`)
+      // console.log(`isEdge: ${isEdge}`)
+      // console.log(`isSafari: ${isSafari}`)
       if (isSafari||isEdge) {
         options.bufferSize = 4096;
         options.numberOfAudioChannels = 2;
@@ -137,13 +137,17 @@ export default {
           this.updateDetectedHistory(resp)
         }
       })
-      .catch((error) => {
-        console.error(error)
+      .catch(() => {
+        this.$store.commit('updateSnackbar', {
+          flag: true,
+          snackbarMsg: 'There was a server error!',
+          timeout: 3000
+        })
         return null
       })
     },
     updateDetectedHistory(link) {
-        console.log(link)
+        // console.log(link)
         const time = moment().format('h:mm:ss a')
         if (this.latestLink.link == link) {
           this.latestLink.occurences = this.latestLink.occurences + 1
