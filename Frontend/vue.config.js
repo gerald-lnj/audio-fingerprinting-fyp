@@ -4,7 +4,7 @@ module.exports = {
   ],
   devServer: {
     // host: '10.27.146.159',
-    // public: 'https://192.168.1.48:8080',
+    public: 'http://172.21.147.173:8080',
     // https: true,
     disableHostCheck: true,
   }
