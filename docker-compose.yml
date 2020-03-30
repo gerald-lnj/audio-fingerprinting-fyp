@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+
+  server:
+
+    build: backend/
+
+    command: ["python", "backend.py"]
+
+    ports:
+      - 5000:5000
+
+  client:
+
+    build: Frontend/
+
+    command: [ "npm", "run", "serve"]
+
+    network_mode: host
+
+    depends_on:
+      - server
+
+    environment:
+      NODE_ENV: development
+
+    ports:
+      - 8080:8080

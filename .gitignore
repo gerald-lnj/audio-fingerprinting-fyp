@@ -88,7 +88,7 @@ typings/
 .dynamodb/
 
 # pyenv files
-fypenv/*
+*/fypenv/*
 fingerprintBackend/service_account_private_key.json
 
 **/.DS_Store
@@ -98,3 +98,9 @@ fingerprintBackend/service_account_private_key.json
 backend/uploaded_files/
 backend/ouput_audio/
 backend/ouput_video/
+
+*/.vscode/
+
+backend/output_audio/
+
+backend/output_video/

@@ -7,14 +7,14 @@ ANCHOR_DISTANCE = 3
 TARGET_ZONE_SIZE = 5
 
 
-def hasher(peak, ultrasound_id=None):
+def hasher(peak, link_id=None):
     """
     expects array
 
-    if ultrasound_id is specified:
+    if link_id is specified:
         the fingeprint is being generated from a link.
         couples will be added to the fingeprint
-    if ultrasound_id is not specified (None):
+    if link_id is not specified (None):
         the fingepeirnt is being generated from listening audio.
         only absolute_time will be added to the fingerprint.
     """
@@ -38,9 +38,11 @@ def hasher(peak, ultrasound_id=None):
             temp_candidate_index = i
             temp_max_amp = anchor[2]
     for i in candidate_anchors:
-        for j in range(i + ANCHOR_DISTANCE, i + ANCHOR_DISTANCE + TARGET_ZONE_SIZE):
+        point_zone_start = i + ANCHOR_DISTANCE
+        point_zone_end = point_zone_start + TARGET_ZONE_SIZE
+        for j in range(point_zone_start, point_zone_end):
             anchor = peak[i]
-            point = peak[j]
+            point = peak[j]  # anchor, but a set distance awa y
             anchor_frequency = anchor[1]
             pointfrequency = point[1]
             delta = point[0] - anchor[0]
@@ -48,9 +50,9 @@ def hasher(peak, ultrasound_id=None):
             address = "a{}p{}d{}".format(anchor_frequency, pointfrequency, delta)
             couple = {
                 "absolute_time": absolute_time,
-                "ultrasound_id": ObjectId(ultrasound_id),
+                "link_id": ObjectId(link_id),
             }
-            if ultrasound_id:
+            if link_id:
                 fingerprint = {"address": address, "couple": couple}
             else:
                 fingerprint = {"address": address, "absolute_time": absolute_time}

@@ -47,7 +47,7 @@
           Sign Up Here
         </v-btn>
       </v-col>
-      <v-col>
+      <v-col v-if="false">
         <v-btn
           @click="onPasswordReset"
         >
@@ -79,28 +79,33 @@ export default {
   }),
   methods: {
     login() {
-      // const data = {
-      //   "email": this.email,
-      //   "password": this.password
-      // }
-      const data = {
-        "email": 'test@test.com',
-        "password": '12345'
-      }
+      const bodyFormData = new FormData();
+
+      bodyFormData.set('email', this.email)
+      bodyFormData.set('password', this.password)
+
+      // bodyFormData.set('email', 'test@test.com')
+      // bodyFormData.set('password', '12345678')
+
       const server_url = process.env.VUE_APP_SERVER_URL
-      Axios.post(`${server_url}/auth`, data)
+
+      Axios
+      .post(`${server_url}/auth`, bodyFormData)
       .then((resp)=> {
         this.$store.commit('updateDetails', resp)
         this.$store.commit('updateLoginStatus')
         this.$router.push('/')
       })
       .catch((error)=>{
-        console.log(error)
+        console.error(error)
       })
     },
     onPasswordReset() {
-      this.$store.state.snackbar.snackbarMsg = 'Sorry, we don\'t have the resources to implement password reset at this time!'
-      this.$store.state.snackbar.flag = true
+      this.$store.commit('updateSnackbar', {
+        flag: true,
+        snackbarMsg: 'Sorry, we don\'t have the resources to implement password reset at this time!',
+        timeout: 3000
+      })
     },
   },
 };

@@ -8,43 +8,55 @@
             x-large
             color="primary"
             fab
-            text 
-            icon
-            @click="toggleRecording"
+            :disabled="!mode"
+            @click="toggleRecording();noDataText='Waiting for results...'"
           >
-            <v-icon>{{ recordingIcon }}</v-icon>
+            <v-icon> mdi-microphone </v-icon>
           </v-btn>
         </v-col>
-        <p v-if="recording">
-          {{ detected }}
-        </p>
-        <v-col>
-          <v-card
-            :v-if="detectedHistory.length > 0"
-            class="d-inline-block mx-auto"
+        <div class="flex-center">
+          <v-radio-group
+            v-model="mode"
+            row
+            :mandatory="false"
           >
-            <transition name="card">
-              <virtual-list 
-                :size="virtualListSize" 
-                :remain="5"
+            <v-radio
+              label="Watermarking"
+              value="ultrasound"
+            />
+            <v-radio
+              label="Fingerprinting"
+              value="audible"
+            />
+          </v-radio-group>
+        </div>
+        <v-col>
+          <v-data-table
+            :headers="headers"
+            :items="detectedHistory"
+            :sort-desc="true"
+            hide-default-header
+            hide-default-footer
+            :no-data-text=" noDataText"
+            class="elevation-1"
+            @click:row="openLink"
+          >
+            <template
+              v-slot:top
+            >
+              <v-toolbar
+                flat
+                short
               >
-                <v-list-item
-                  v-for="entry in detectedHistory"
-                  :key="entry.time"
-                  :href="entry.data"
-                >
-                  <v-list-item-content>
-                    <v-list-item-title
-                      v-text="entry.data"
-                    />
-                    <v-list-item-subtitle
-                      v-text="entry.time"
-                    />
-                  </v-list-item-content>
-                </v-list-item>
-              </virtual-list>
-            </transition>
-          </v-card>
+                <v-toolbar-title>Detected Links</v-toolbar-title>
+                <v-spacer />
+
+                <v-btn @click="detectedHistory = []">
+                  Clear Links
+                </v-btn>
+              </v-toolbar>
+            </template>
+          </v-data-table>
         </v-col>
       </v-col>
     </v-row>
@@ -57,18 +69,25 @@
 import RecordRTC from 'recordrtc'
 import Axios from '../utilities/api';
 import moment from 'moment'
-import virtualList from 'vue-virtual-scroll-list'
+// import VueElementLoading from 'vue-element-loading'
+
 export default {
   name: 'Detect',
-  components: {'virtual-list': virtualList},
   data: function () {
     return {
       recording: false,
-      recordingIcon: "mdi-microphone",
+      noDataText: 'Tap the microphone to start detection!',
       debug: true,
-      detected: "Waiting...",
+      headers: [
+        {text: 'Time', align: 'start',value: 'time'},
+        {text: 'Link', value: 'data'},
+      ],
       detectedHistory: [],
-      updated: false
+      mode: null,
+      latestLink: {
+        link: null,
+        occurences: 0,
+      }
     }
   },
   computed: {
@@ -87,7 +106,7 @@ export default {
         recorderType: RecordRTC.StereoAudioRecorder,
         numberOfAudioChannels: 1,
         desiredSampRate: 44100,
-        timeSlice: 5000,
+        timeSlice: 10000,
         ondataavailable: (blob) => {
           this.postBlob(blob)
           this.stopRecording()
@@ -109,23 +128,13 @@ export default {
       const server_url = process.env.VUE_APP_SERVER_URL
       const bodyFormData = new FormData();
       bodyFormData.append('audio', blob)
+      bodyFormData.append('mode', this.mode)
       Axios
       .post(`${server_url}/detect`, bodyFormData)
       .then((msg)=>{
         if (msg.status == 200) {
           const resp = msg.data.message
-          console.log(resp)
-          this.detected = "Detected!"
-          const entry = {
-            time: moment().format('h:mm:ss a'),
-            data: resp
-          }
-          this.detectedHistory.push(entry)
-          this.updated=true
-        }
-
-        else if (msg.status == 204) {
-          this.detected = "Waiting..."
+          this.updateDetectedHistory(resp)
         }
       })
       .catch((error) => {
@@ -133,14 +142,29 @@ export default {
         return null
       })
     },
+    updateDetectedHistory(link) {
+        console.log(link)
+        const time = moment().format('h:mm:ss a')
+        if (this.latestLink.link == link) {
+          this.latestLink.occurences = this.latestLink.occurences + 1
+          if (this.latestLink.occurences > 1) {
+            const entry = {
+              time: time,
+              data: link
+            }
+            this.detectedHistory.push(entry)
+          }
+        } else {
+          this.latestLink.link = link
+          this.latestLink.occurences = 1
+        }
+    },
     toggleRecording() {
       if (this.recording) {
         this.recording = false
-        this.recordingIcon = "mdi-microphone"
         this.stopRecording()
       } else {
         this.recording = true
-        // this.recordingIcon = "mdi-stop"
         this.startRecording()
       }
     },
@@ -155,20 +179,26 @@ export default {
     },
 
     startRecording() {
-      const mediaConstraints = { audio: true };
-      navigator.mediaDevices
-      .getUserMedia(mediaConstraints)
-      .then(this.successCallback.bind(this), this.errorCallback.bind(this));
+      if (this.recordRTC == null) {
+        const mediaConstraints = { audio: true };
+        navigator.mediaDevices
+        .getUserMedia(mediaConstraints)
+        .then(this.successCallback.bind(this), this.errorCallback.bind(this));
+      } else {
+        const recordRTC = this.recordRTC;
+        recordRTC.startRecording()
+      }
+      
     },
     stopRecording() {
       const recordRTC = this.recordRTC;
-      recordRTC.stopRecording();
-      const stream = this.stream;
-      stream.getAudioTracks().forEach(track => track.stop());
+      recordRTC.reset()
     },
     download() {
       this.recordRTC.save('audio.wav');
-      this.recordRTC.ge
+    },
+    openLink(entry) {
+      window.open(entry.data, '_blank');
     }
   }
 }
@@ -178,10 +208,10 @@ export default {
 @keyframes shadow-pulse
 {
   0% {
-    box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.5);
   }
   100% {
-    box-shadow: 0 0 0 20px rgba(0, 0, 0, 0);
+    box-shadow: 0 0 0 40px rgba(0, 0, 0, 0);
   }
 }
 
@@ -194,5 +224,10 @@ export default {
 .mic
 {
   animation: shadow-pulse 1s infinite;
+}
+.flex-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>

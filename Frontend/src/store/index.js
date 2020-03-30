@@ -15,8 +15,10 @@ export default new Vuex.Store({
     jwt: '',
     snackbar: {
       flag: false,
-      snackbarMsg: ''
-    }
+      snackbarMsg: '',
+      timeout: 3000
+    },
+    windowWidth: null
   },
   mutations: {
     updateDetails(state, resp) {
@@ -30,7 +32,17 @@ export default new Vuex.Store({
     },
     resetState(state) {
       Object.assign(state, getDefaultState())
+    },
+    updateWindowWidth(state, windowWidth) {
+      state.windowWidth = windowWidth
+    },
+    updateSnackbar(state, snackbar) {
+      state.snackbar = snackbar
+    },
+    updateJwt(state, jwt) {
+      state.jwt = jwt
     }
+
   },
   actions: {
   },
@@ -47,7 +59,9 @@ const getDefaultState= () => {
     jwt: '',
     snackbar: {
       flag: false,
-      snackbarMsg: ''
-    }
+      snackbarMsg: '',
+      timeout: 3000
+    },
+    windowWidth: null
   }
 }
