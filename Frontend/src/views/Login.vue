@@ -47,7 +47,7 @@
           Sign Up Here
         </v-btn>
       </v-col>
-      <v-col>
+      <v-col v-if="false">
         <v-btn
           @click="onPasswordReset"
         >
