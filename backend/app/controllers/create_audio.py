@@ -46,7 +46,6 @@ def ultrasound_generator(seed):
 
 
 def audio_extractor(extracted_audio_filepath, seed, start, end):
-    print(extracted_audio_filepath)
     audio_filename = base64.urlsafe_b64encode(seed.encode("utf-8")).decode("utf-8")
     output_filepath = "{}/output_audio/{}.wav".format(CWD, audio_filename)
 

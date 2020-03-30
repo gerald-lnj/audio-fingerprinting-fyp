@@ -144,6 +144,5 @@ def video_to_wav(video_filename):
         subprocess.run(ffmpeg_builder, check=True)
     except subprocess.CalledProcessError:
         return None
-    print(output_filepath)
 
     return output_filepath
