@@ -96,8 +96,12 @@ export default {
         this.$store.commit('updateLoginStatus')
         this.$router.push('/')
       })
-      .catch((error)=>{
-        console.error(error)
+      .catch(()=>{
+        this.$store.commit('updateSnackbar', {
+          flag: true,
+          snackbarMsg: 'Login error!',
+          timeout: 3000
+        })
       })
     },
     onPasswordReset() {
