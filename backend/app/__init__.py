@@ -57,6 +57,23 @@ app.config["SCHEDULER_JOBSTORES"] = {
         database="fyp", collection="jobs", host="localhost", port=27017
     )
 }
+
+# def checkCollections():
+#     required_collections = [
+#         'ultrasound_fingerprints',
+#         'jobs',
+#         'audible_fingerprints',
+#         'users',
+#         'videos',
+#         'links'
+#     ]
+#     existing_collections = mongo.db.list_collection_names()
+#     for collection in required_collections:
+#         if collection not in existing_collections:
+#             mongo.db.create_collection(collection)
+# 
+# checkCollections()
+
 scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
