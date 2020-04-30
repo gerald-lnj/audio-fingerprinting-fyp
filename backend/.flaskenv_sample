@@ -1,0 +1,6 @@
+FLASK_APP=backend.py
+MONGO_URI = "mongodb://127.0.0.1:27017/<your-db-name>"
+DEBUG = True
+JWT_SECRET_KEY = <your-key-here>
+FLASK_ENV=development
+UPLOADED_VIDEOS_DEST="./uploaded_files"
