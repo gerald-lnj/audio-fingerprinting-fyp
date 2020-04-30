@@ -72,6 +72,9 @@ def overlay(time_dicts, video_filepath):
     # -filter_complex amix=inputs={{num streams}}:duration=longest
     # -c:v copy -c:a aac -b:a 320k -async 1 {{output filepath}}
 
+    # init num of inputs with 1 (just video track)
+    inputs = 1
+
     output_filepath = video_filepath.replace("uploaded_files", "output_video")
 
     ffmpeg_builder = ["ffmpeg", "-hide_banner", "-loglevel", "panic"]
@@ -91,6 +94,7 @@ def overlay(time_dicts, video_filepath):
                 ffmpeg_builder.extend(
                     ["-itsoffset", str(time_cursor_temp), "-i", filepath]
                 )
+                inputs += 1
                 # ffmpeg_builder.extend(['-itsoffset', str(time_cursor + 3), '-i', filepath])
                 # ffmpeg_builder.extend(['-itsoffset', str(time_cursor + 6), '-i', filepath])
 
@@ -100,7 +104,7 @@ def overlay(time_dicts, video_filepath):
     ffmpeg_builder.extend(
         [
             "-filter_complex",
-            "amix=inputs={}:duration=longest".format(str(len(time_dicts) * 3 + 1)),
+            "amix=inputs={}:duration=longest".format(inputs),
         ]
     )
 
