@@ -42,7 +42,7 @@ def match(fingerprints, mode):
                 ultrasound_id = db_couple["link_id"]
                 absolute_time = int(db_couple["absolute_time"])
                 delta = int(fingerprint["absolute_time"] - absolute_time)
-                couple = (ultrasound_id, absolute_time)  # holds ints
+                couple = (ultrasound_id, absolute_time)  # convert dict to tuple for hashing
                 if couple not in target_zone_map.keys():
                     target_zone_map[couple] = [delta]
                 else:
