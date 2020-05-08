@@ -96,3 +96,5 @@ fingerprintBackend/service_account_private_key.json
 *.pyc
 
 */.vscode/
+
+backend/Test videos/
