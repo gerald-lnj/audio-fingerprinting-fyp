@@ -4,10 +4,12 @@ This is the Flask server backend for the Audio Fingerprinting application.
 
 ## Table of Contents
 
-- [Installation and running](#Installation-and-running)
-- [Installation and running with Docker (WIP)](#Installation-and-running-with-Docker-(WIP))
-- [Code Structure](#Code-Structure)
-- [ENV file (IMPORTANT)](#ENV-file-(IMPORTANT))
+- [Audio Fingerprinting Backend](#audio-fingerprinting-backend)
+  - [Table of Contents](#table-of-contents)
+  - [Installation and running](#installation-and-running)
+  - [Installation and running with Docker (WIP)](#installation-and-running-with-docker-wip)
+  - [Code Structure](#code-structure)
+  - [ENV file (IMPORTANT)](#env-file-important)
 
 ## Installation and running
 
@@ -23,50 +25,29 @@ cd backend
 
    I recommend [pyenv](https://github.com/pyenv/pyenv).
 
-   If using pyenv, the .python-version file should automatically set Python 3.8.0. If not, use:
+   If using pyenv, the .python-version file should automatically set Python 3.8.11. If not, use:
 
    ```Bash
-    pyenv local 3.8.0
+    pyenv local 3.8.11
     ```
 
-2. Set up virtual environment (OPTIONAL)
+2. Install dependencies
 
-    Same rationale as step 1, to allow you to work on multiple projects without worrying about clashing version of packages in you global site-packages.
+    install `poetry`, and dependencies:
 
-    I recommend [virtualenv](https://github.com/pypa/virtualenv).
-
-    To create a virtual env, use:
-
-    ```Bash
-    virtualenv <your-env-name>
+    ```python
+    pip install poetry
+    poetry install
     ```
 
-    To activate your new virtual environment, use:
 
-    ```Bash
-    source <your-env-name>/bin/activate
-    ```
-
-    To deactive your virtual environment:
-
-    ```Bash
-    deactivate
-    ```
-
-3. Install dependencies
-
-    Install packages from requirements.txt:
-
-    ```Bash
-    pip install -r requirements.txt
-    ```
 
 4. Run backend.py
 
     backend.py is the entry point to the server.
 
     ```Bash
-    python backend.py
+    poetry run backend.py
     ```
 
     This will start a dev server.
