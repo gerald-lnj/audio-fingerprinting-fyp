@@ -13,8 +13,9 @@ WORKDIR /usr/src/backend
 
 COPY . .
 
-RUN pip install -r requirements.txt
+RUN pip install poetry
+RUN poetry install
 
 EXPOSE 5000
 
-CMD ["python", "backend.py"]
+CMD ["poetry", "run", "backend.py"]
